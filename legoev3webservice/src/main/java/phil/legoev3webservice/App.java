@@ -2,8 +2,11 @@ package phil.legoev3webservice;
 
 import java.util.Arrays;
 
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
 public class App {
 	public static void main(String[] args) throws InterruptedException {
+		SLF4JBridgeHandler.install();
 		new App().example();
 
 	}
