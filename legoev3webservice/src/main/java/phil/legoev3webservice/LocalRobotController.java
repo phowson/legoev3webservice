@@ -60,11 +60,34 @@ public class LocalRobotController implements RobotController {
 		return d;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see phil.legoev3webservice.IRobotController#advanceWithoutCollision(int)
-	 */
+	public int reverse(int clicks) {
+		leftMotor.reset();
+		leftMotor.setStopAction("brake");
+		leftMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
+
+		rightMotor.reset();
+		rightMotor.setStopAction("brake");
+		rightMotor.setSpeed_SP(100);
+
+		int initalPosL = Integer.parseInt(leftMotor.getAttribute(POSITION));
+		int initalPosR = Integer.parseInt(rightMotor.getAttribute(POSITION));
+		int leftTarget = initalPosL + clicks;
+		int rightTarget = initalPosR + clicks;
+		leftMotor.setPosition_SP(clicks);
+		rightMotor.setPosition_SP(clicks);
+		leftMotor.runToRelPos();
+		rightMotor.runToRelPos();
+		while (Integer.parseInt(leftMotor.getAttribute(POSITION)) < leftTarget
+				|| Integer.parseInt(rightMotor.getAttribute(POSITION)) < rightTarget) {
+			Thread.yield();
+		}
+		int finalPosL = Integer.parseInt(leftMotor.getAttribute(POSITION));
+		int finalPosR = Integer.parseInt(rightMotor.getAttribute(POSITION));
+
+		int d = ((finalPosL - initalPosL) + (finalPosR - initalPosR)) / 2;
+		return d;
+	}
+
 	public AdvanceResults advanceWithoutCollision(int clicks) {
 
 		leftMotor.reset();
@@ -160,12 +183,12 @@ public class LocalRobotController implements RobotController {
 			colorData[idx] = colorSensor.getReflectedLightIntensity();
 
 			target += sensorScanStep;
-			blockingSensorArrayMove(target);
+			blockingSensorArrayMoveImpl(target);
 			idx += incr;
 		}
 	}
 
-	public void blockingSensorArrayMove(int target) {
+	private void blockingSensorArrayMoveImpl(int target) {
 		sensorArrayMotor.setPosition_SP(target - getSensorArrayPosition());
 		sensorArrayMotor.runToRelPos();
 		while (getSensorArrayPosition() < target) {
@@ -176,4 +199,15 @@ public class LocalRobotController implements RobotController {
 	private int getSensorArrayPosition() {
 		return Integer.parseInt(sensorArrayMotor.getAttribute(POSITION));
 	}
+
+	public void blockingSensorArrayMove(int target) {
+		sensorArrayMotor.reset();
+		if (target > 0) {
+			sensorArrayMotor.setPolarity("normal");
+		} else {
+			sensorArrayMotor.setPolarity("inversed");
+		}
+		blockingSensorArrayMoveImpl(target);
+	}
+
 }

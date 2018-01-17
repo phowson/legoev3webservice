@@ -17,10 +17,12 @@ public class Session {
 	private RobotControlServer server;
 	private SocketChannel channel;
 	private int currentLen = -1;
+	private RobotController controller;
 
-	public Session(RobotControlServer robotControlServer, SocketChannel c) {
+	public Session(RobotControlServer robotControlServer, SocketChannel c, RobotController controller) {
 		this.channel = c;
 		this.server = robotControlServer;
+		this.controller = controller;
 	}
 
 	public void onReadable(SelectableChannel selectableChannel) throws IOException {
@@ -31,6 +33,12 @@ public class Session {
 		while (true) {
 			if (currentLen == -1) {
 				int r = this.channel.read(lenBuffer);
+				if (r == -1) {
+					logger.error("Connection " + selectableChannel + ", closed");
+					selectableChannel.close();
+					this.server.unregister(selectableChannel);
+					return;
+				}
 				if (r == 0) {
 					break;
 				}
@@ -42,6 +50,7 @@ public class Session {
 						logger.error("Got an illegal length message from " + selectableChannel + ", closing");
 						selectableChannel.close();
 						this.server.unregister(selectableChannel);
+						return;
 					}
 
 					inboundBuffer.position(0);
@@ -49,7 +58,13 @@ public class Session {
 				}
 			} else {
 				int r = this.channel.read(inboundBuffer);
-				if (r == 0) {
+				if (r == -1) {
+					logger.error("Connection " + selectableChannel + ", closed");
+					selectableChannel.close();
+					this.server.unregister(selectableChannel);
+				}
+
+				if (r <= 0) {
 					break;
 				}
 				if (!inboundBuffer.hasRemaining()) {
@@ -67,6 +82,42 @@ public class Session {
 
 	private void processMessage() {
 		logger.info("Got a new message, len =" + inboundBuffer.remaining());
+		byte messageType = inboundBuffer.get();
+		switch (messageType) {
+		case NetworkMessageConstants.MSG_ADVANCE:
+			onAdvance();
+			break;
+		case NetworkMessageConstants.MSG_REVERSE:
+			onReverse();
+			break;
+		case NetworkMessageConstants.MSG_ROTATE:
+			onRotate();
+			break;
+		case NetworkMessageConstants.MSG_SCAN:
+			onScan();
+			break;
+
+		}
+
+	}
+
+	private void onScan() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void onRotate() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void onReverse() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void onAdvance() {
+		// TODO Auto-generated method stub
 
 	}
 
