@@ -70,7 +70,7 @@ public class App {
 		return d;
 	}
 
-	private int advanceWithoutCollision(int clicks) {
+	private AdvanceResults advanceWithoutCollision(int clicks) {
 
 		leftMotor.reset();
 		leftMotor.setStopAction("brake");
@@ -91,6 +91,7 @@ public class App {
 
 		int prox = irSensor.getProximity();
 		int intensity = colorSensor.getReflectedLightIntensity();
+		int startProx = prox;
 
 		if (prox > 0 && intensity < 10 && !touchSensor.isPressed()) {
 			leftMotor.runToRelPos();
@@ -113,13 +114,21 @@ public class App {
 		int finalPosR = Integer.parseInt(rightMotor.getAttribute(POSITION));
 
 		int d = ((finalPosL - initalPosL) + (finalPosR - initalPosR)) / 2;
-		return d;
+		return new AdvanceResults(d, startProx, prox, colorSensor.getReflectedLightIntensity(),
+				touchSensor.isPressed());
 
 	}
 
 	private void run() throws InterruptedException {
 
-		fullSweep();
+		ScanData sweep = fullScannerSweep(80, 60);
+		System.out.println("Scan 1 data : ");
+		System.out.println(Arrays.toString(sweep.irData));
+		System.out.println(Arrays.toString(sweep.colorData));
+
+		System.out.println("Scan 2 data : ");
+		System.out.println(Arrays.toString(sweep.irData2));
+		System.out.println(Arrays.toString(sweep.colorData2));
 
 		int dist = rotate(500);
 		System.out.println("Total distance travelled : " + dist);
@@ -127,46 +136,60 @@ public class App {
 		dist = rotate(-500);
 		System.out.println("Total distance travelled : " + dist);
 
-		dist = advanceWithoutCollision(1000);
-		System.out.println("Total distance travelled : " + dist);
-
+		AdvanceResults result = advanceWithoutCollision(1000);
+		System.out.println("Total distance travelled in clicks : " + result.clicksAdvanced);
+		int d = result.startProximity - result.endProximity;
+		System.out.println("Total distance travelled according to IR sensor : " + 70.0 * (d / 100.0) +"cm");
 	}
 
-	private void fullSweep() throws InterruptedException {
+	private ScanData fullScannerSweep(int scanSize, int scanStep) throws InterruptedException {
+		int halfScan = scanSize / 2;
 		sensorArrayMotor.reset();
 
+		int[] irData = new int[scanSize];
+		int[] irData2 = new int[scanSize];
+
+		int[] colorData = new int[scanSize];
+		int[] colorData2 = new int[scanSize];
+
 		sensorArrayMotor.setPolarity("normal");
-		sensorSweep(40);
+		sensorSweep(halfScan, irData, colorData, halfScan, 1, scanStep);
 		sensorArrayMotor.setPolarity("inversed");
-		sensorSweep(80);
+		sensorSweep(scanSize, irData2, colorData2, scanSize - 1, -1, scanStep);
 		sensorArrayMotor.setPolarity("normal");
-		sensorSweep(40);
+		sensorSweep(halfScan, irData, colorData, 0, 1, scanStep);
+
+		return new ScanData(irData, colorData, irData2, colorData2);
+
 	}
 
-	private void sensorSweep(int steps) throws InterruptedException {
+	private void sensorSweep(int steps, int[] irData, int[] colorData, int startIdx, int incr, int sensorScanStep)
+			throws InterruptedException {
 		irSensor.setMode("IR-PROX");
 		colorSensor.setMode(ColorSensor.SYSFS_REFLECTED_LIGHT_INTENSITY_MODE);
 		sensorArrayMotor.setStopAction("brake");
-		sensorArrayMotor.setSpeed_SP(300);
+		sensorArrayMotor.setSpeed_SP(200);
+
+		int idx = startIdx;
 
 		int pos = getSensorArrayPosition();
 		int target = pos;
 		for (int i = 0; i < steps; ++i) {
 
 			int prox = irSensor.getProximity();
-			System.out.println("Proximity = " + prox + "%");
-			System.out.println("Approx = " + 70.0 * (prox / 100.0) + "cm");
+			// System.out.println("Proximity = " + prox + "%");
+			// System.out.println("Approx = " + 70.0 * (prox / 100.0) + "cm");
+			irData[idx] = prox;
+			colorData[idx] = colorSensor.getReflectedLightIntensity();
 
-			System.out.println("Light intensity = " + colorSensor.getReflectedLightIntensity());
-
-			target += 60;
+			target += sensorScanStep;
 			blockingSensorArrayMove(target);
-
+			idx += incr;
 		}
 	}
 
 	private void blockingSensorArrayMove(int target) {
-		sensorArrayMotor.setPosition_SP(target- getSensorArrayPosition());
+		sensorArrayMotor.setPosition_SP(target - getSensorArrayPosition());
 		sensorArrayMotor.runToRelPos();
 		while (getSensorArrayPosition() < target) {
 			Thread.yield();
