@@ -14,6 +14,8 @@ public class Session {
 	private final int MAX_SIZE = 1024;
 	private final ByteBuffer inboundBuffer = ByteBuffer.allocateDirect(MAX_SIZE);
 
+	private final ByteBuffer outboundBuffer = ByteBuffer.allocateDirect(65536);
+
 	private RobotControlServer server;
 	private SocketChannel channel;
 	private int currentLen = -1;
@@ -80,45 +82,92 @@ public class Session {
 
 	}
 
+	/**
+	 * 
+	 */
 	private void processMessage() {
+		outboundBuffer.clear();
 		logger.info("Got a new message, len =" + inboundBuffer.remaining());
-		byte messageType = inboundBuffer.get();
-		switch (messageType) {
-		case NetworkMessageConstants.MSG_ADVANCE:
-			onAdvance();
-			break;
-		case NetworkMessageConstants.MSG_REVERSE:
-			onReverse();
-			break;
-		case NetworkMessageConstants.MSG_ROTATE:
-			onRotate();
-			break;
-		case NetworkMessageConstants.MSG_SCAN:
-			onScan();
-			break;
+		try {
+			byte messageType = inboundBuffer.get();
+			switch (messageType) {
+			case NetworkMessageConstants.MSG_ADVANCE:
+				onAdvance();
+				break;
+			case NetworkMessageConstants.MSG_REVERSE:
+				onReverse();
+				break;
+			case NetworkMessageConstants.MSG_ROTATE:
+				onRotate();
+				break;
+			case NetworkMessageConstants.MSG_SCAN:
+				onScan();
+				break;
+			default:
+				logger.error("Unexpected message type : " + messageType);
 
+			}
+		} catch (Exception ex) {
+			logger.error("Unexpected exception while processing inbound message:", ex);
 		}
 
 	}
 
-	private void onScan() {
-		// TODO Auto-generated method stub
+	private void onScan() throws InterruptedException, IOException {
+
+		int scanSize = inboundBuffer.getInt();
+		int scanStep = inboundBuffer.getInt();
+		ScanData results = controller.fullScannerSweep(scanSize, scanStep);
+		outboundBuffer.position(0);
+		write(outboundBuffer, results.irData);
+		write(outboundBuffer, results.irData2);
+		write(outboundBuffer, results.colorData);
+		write(outboundBuffer, results.colorData2);
+		outboundBuffer.flip();
+		while (outboundBuffer.hasRemaining()) {
+			this.channel.write(outboundBuffer);
+		}
 
 	}
 
-	private void onRotate() {
-		// TODO Auto-generated method stub
+	private void write(ByteBuffer b, int[] irData) {
+		for (int i : irData) {
+			b.putInt(i);
+		}
+
+	}
+
+	private void onRotate() throws IOException {
+		int iclicks = inboundBuffer.getInt();
+		int clicksMoved = controller.rotate(iclicks);
+		outboundBuffer.position(0);
+		outboundBuffer.putInt(clicksMoved);
+		outboundBuffer.flip();
+		while (outboundBuffer.hasRemaining()) {
+			this.channel.write(outboundBuffer);
+		}
 
 	}
 
 	private void onReverse() {
-		// TODO Auto-generated method stub
+		int iclicks = inboundBuffer.getInt();
+		controller.reverse(iclicks);
 
 	}
 
-	private void onAdvance() {
-		// TODO Auto-generated method stub
-
+	private void onAdvance() throws IOException {
+		int iclicks = inboundBuffer.getInt();
+		AdvanceResults res = controller.advanceWithoutCollision(iclicks);
+		outboundBuffer.position(0);
+		outboundBuffer.putInt(res.clicksAdvanced);
+		outboundBuffer.putInt(res.startProximity);
+		outboundBuffer.putInt(res.endProximity);
+		outboundBuffer.putInt(res.reflectedLightIntensity);
+		outboundBuffer.put((byte) (res.pressed ? 1 : 0));
+		outboundBuffer.flip();
+		while (outboundBuffer.hasRemaining()) {
+			this.channel.write(outboundBuffer);
+		}
 	}
 
 }
