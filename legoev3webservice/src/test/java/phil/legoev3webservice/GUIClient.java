@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import phil.legoev3webservice.client.RobotClient;
+import phil.legoev3webservice.control.AdvanceResults;
+import phil.legoev3webservice.control.ScanData;
+import phil.legoev3webservice.robot.RobotCalibration;
 
 public class GUIClient {
 
@@ -18,7 +21,15 @@ public class GUIClient {
 	}
 
 	private void run() {
-		this.client.advanceWithoutCollision(1000);
+		ScanData scanResults = this.client.fullScannerSweep(180, 27);
+		System.out.println(scanResults);
+		
+//		this.client.rotate(530*4);
+		
+		//this.client.reverse(500);
+		
+//		AdvanceResults res = this.client.advanceWithoutCollision((int) (50*RobotCalibration.MOVE_CLICKS_PER_CM));
+//		System.out.println(res);
 	}
 
 }

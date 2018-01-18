@@ -69,6 +69,8 @@ public class LocalRobotController implements RobotController {
 
 	public int reverse(int clicks) {
 		setupMainMotors();
+		leftMotor.setPolarity("inversed");
+		rightMotor.setPolarity("inversed");
 
 		int initalPosL = getLeftMotorPosition();
 		int initalPosR = getRightMotorPosition();
@@ -99,6 +101,8 @@ public class LocalRobotController implements RobotController {
 	public AdvanceResults advanceWithoutCollision(int clicks) {
 
 		setupMainMotors();
+		leftMotor.setPolarity("normal");
+		rightMotor.setPolarity("normal");
 
 		int initalPosL = getLeftMotorPosition();
 		int initalPosR = getRightMotorPosition();

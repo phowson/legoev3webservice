@@ -1,5 +1,7 @@
 package phil.legoev3webservice.control;
 
+import java.util.Arrays;
+
 public class ScanData {
 
 	public final int[] irData;
@@ -13,6 +15,12 @@ public class ScanData {
 
 		this.colorData = colorData;
 		this.colorData2 = colorData2;
+	}
+
+	@Override
+	public String toString() {
+		return "ScanData [irData=" + Arrays.toString(irData) + ", irData2=" + Arrays.toString(irData2) + ", colorData="
+				+ Arrays.toString(colorData) + ", colorData2=" + Arrays.toString(colorData2) + "]";
 	}
 
 }

@@ -18,7 +18,7 @@ public class RobotClient implements RobotController, Closeable {
 	private final SocketChannel socket;
 
 	private final ByteBuffer outBuffer = ByteBuffer.allocate(1024);
-	private final ByteBuffer inBuffer = ByteBuffer.allocate(1024);
+	private final ByteBuffer inBuffer = ByteBuffer.allocate(65535);
 
 	public RobotClient(InetSocketAddress address) throws IOException {
 		this.socket = SocketChannel.open(address);
