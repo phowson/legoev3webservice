@@ -12,6 +12,7 @@ import phil.legoev3webservice.control.ScanDataFilter;
 import phil.legoev3webservice.map.EnvironmentMap;
 import phil.legoev3webservice.map.MapImageRenderer;
 import phil.legoev3webservice.map.RobotState;
+import phil.legoev3webservice.robot.RobotCalibration;
 
 public class EnvironmentMapPlay {
 
@@ -50,8 +51,10 @@ public class EnvironmentMapPlay {
 		RobotState state = new RobotState();
 		state.x_CM = 500;
 		state.y_CM = 500;
+		state.heading_DEG = 0;
 		EnvironmentMap map = new EnvironmentMap(1000);
 
+		map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		map.apply(state, new ScanDataFilter().filter(sd));
 		BufferedImage image = new MapImageRenderer().render(state, map);
 		File outputfile = new File("saved.png");
