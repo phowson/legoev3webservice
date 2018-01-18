@@ -7,6 +7,7 @@ import phil.legoev3webservice.robot.RobotCalibration;
 public class StateUpdatingRobotController implements RobotController {
 	private final RobotController controller;
 	private final RobotState state;
+	private final ScanDataFilter filter = new ScanDataFilter();
 	private EnvironmentMap map;
 
 	public StateUpdatingRobotController(RobotController controller, RobotState state, EnvironmentMap map) {
@@ -27,7 +28,7 @@ public class StateUpdatingRobotController implements RobotController {
 		return controller;
 	}
 
-	public int rotate(int iclicks) {
+	public synchronized int rotate(int iclicks) {
 		int r = controller.rotate(iclicks);
 
 		state.rotate(r * RobotCalibration.ROTATE_DEGREES_PER_CLICK);
@@ -35,7 +36,7 @@ public class StateUpdatingRobotController implements RobotController {
 		return r;
 	}
 
-	public AdvanceResults advanceWithoutCollision(int clicks) {
+	public synchronized AdvanceResults advanceWithoutCollision(int clicks) {
 		AdvanceResults res = controller.advanceWithoutCollision(clicks);
 
 		state.advance(res.clicksAdvanced * RobotCalibration.MOVE_CM_PER_CLICK);
@@ -47,17 +48,19 @@ public class StateUpdatingRobotController implements RobotController {
 		return res;
 	}
 
-	public int reverse(int clicks) {
+	public synchronized int reverse(int clicks) {
 		int c = controller.reverse(clicks);
 		state.advance(-c * RobotCalibration.MOVE_CM_PER_CLICK);
 		return c;
 	}
 
-	public ScanData fullScannerSweep(int scanSize, int scanStep) throws InterruptedException {
-		return controller.fullScannerSweep(scanSize, scanStep);
+	public synchronized ScanData fullScannerSweep(int scanSize, int scanStep) throws InterruptedException {
+		ScanData sweep = controller.fullScannerSweep(scanSize, scanStep);
+		map.apply(state, filter.filter(sweep));
+		return sweep;
 	}
 
-	public void blockingSensorArrayMove(int target) {
+	public synchronized void blockingSensorArrayMove(int target) {
 		controller.blockingSensorArrayMove(target);
 	}
 

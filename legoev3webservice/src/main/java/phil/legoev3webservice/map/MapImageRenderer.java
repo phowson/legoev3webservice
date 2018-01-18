@@ -14,8 +14,10 @@ public class MapImageRenderer {
 
 	private static final Color myGreen = new Color(0, 255, 0);
 
-	public BufferedImage render(RobotState state, EnvironmentMap map) {
-		BufferedImage image = new BufferedImage(map.mapWidth, map.mapWidth, BufferedImage.TYPE_INT_RGB);
+	public BufferedImage render(RobotState state, EnvironmentMap map, BufferedImage image) {
+		if (image == null) {
+			image = new BufferedImage(map.mapWidth, map.mapWidth, BufferedImage.TYPE_INT_RGB);
+		}
 
 		for (int i = 0; i < map.mapWidth; ++i) {
 			for (int j = 0; j < map.mapWidth; ++j) {
@@ -53,7 +55,7 @@ public class MapImageRenderer {
 		double vY = Math.sin(overallHeadingRad) * 30;
 		graphics.setColor(myGreen);
 		graphics.drawLine((int) state.x_CM, (int) state.y_CM, (int) (state.x_CM + vX), (int) (state.y_CM + vY));
-		graphics.fillOval((int) state.x_CM-4, (int) state.y_CM-4, 8, 8);
+		graphics.fillOval((int) state.x_CM - 4, (int) state.y_CM - 4, 8, 8);
 
 		return image;
 	}
