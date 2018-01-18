@@ -1,6 +1,6 @@
 package phil.legoev3webservice.server;
 
-import java.awt.Robot;
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectableChannel;
@@ -8,13 +8,15 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.slf4j.LoggerFactory;
 
 import phil.legoev3webservice.control.RobotController;
 
-public class RobotControlServer {
+public class RobotControlServer implements Closeable {
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RobotControlServer.class);
 	private final Selector sel;
 	private ServerSocketChannel chan;
@@ -22,9 +24,9 @@ public class RobotControlServer {
 	private volatile boolean stopped;
 	private RobotController robotController;
 
-	public RobotControlServer(RobotController robotController) throws IOException {
+	public RobotControlServer(RobotController robotController, int port) throws IOException {
 		sel = Selector.open();
-		chan = ServerSocketChannel.open().bind(new InetSocketAddress(5050));
+		chan = ServerSocketChannel.open().bind(new InetSocketAddress(port));
 		chan.configureBlocking(false);
 		this.robotController = robotController;
 		acceptKey = chan.register(sel, SelectionKey.OP_ACCEPT);
@@ -40,19 +42,33 @@ public class RobotControlServer {
 
 				for (Iterator<SelectionKey> it = sel.selectedKeys().iterator(); it.hasNext();) {
 					SelectionKey k = it.next();
+					final SelectableChannel channel = k.channel();
 					if (k.isAcceptable()) {
-						ServerSocketChannel c2 = (ServerSocketChannel) k.channel();
+						ServerSocketChannel c2 = (ServerSocketChannel) channel;
 						SocketChannel c = c2.accept();
 						c.configureBlocking(false);
 						c.register(sel, SelectionKey.OP_READ, new Session(this, c, robotController));
 						logger.info("Accepting : " + c);
 					} else if (k.isReadable()) {
-						((Session) k.attachment()).onReadable(k.channel());
+						try {
+							((Session) k.attachment()).onReadable(channel);
+						} catch (Exception ex) {
+							logger.error("Unexpected Exception on channel " + channel, ex);
+							try {
+								channel.close();
+							} catch (Exception ex2) {
+							}
+
+							k.cancel();
+						}
 					} else {
 
-						SocketChannel c = (SocketChannel) k.channel();
+						SocketChannel c = (SocketChannel) channel;
 						logger.info("Closing and deregistering " + c);
-						c.close();
+						try {
+							c.close();
+						} catch (Exception ex2) {
+						}
 						k.cancel();
 					}
 
@@ -67,7 +83,19 @@ public class RobotControlServer {
 
 	public void unregister(SelectableChannel selectableChannel) {
 		SelectionKey k = selectableChannel.keyFor(sel);
-		k.cancel();
+		if (k != null)
+			k.cancel();
+
+	}
+
+	public void close() throws IOException {
+		stopped = true;
+		acceptKey.cancel();
+		Set<SelectionKey> z = new HashSet<>(sel.keys());
+		for (SelectionKey k : z) {
+			k.channel().close();
+		}
+		sel.close();
 
 	}
 

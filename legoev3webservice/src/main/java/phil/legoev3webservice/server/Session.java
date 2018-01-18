@@ -39,15 +39,23 @@ public class Session {
 
 		while (true) {
 			if (currentLen == -1) {
-				int r = this.channel.read(lenBuffer);
-				if (r == -1) {
-					logger.error("Connection " + selectableChannel + ", closed");
+				try {
+					int r = this.channel.read(lenBuffer);
+					if (r == -1) {
+						logger.error("Connection " + selectableChannel + ", closed");
+						selectableChannel.close();
+						this.server.unregister(selectableChannel);
+						return;
+					}
+					if (r == 0) {
+						break;
+					}
+				} catch (IOException e) {
+					logger.error("IO exception on channel " + selectableChannel + ", closing");
+
 					selectableChannel.close();
 					this.server.unregister(selectableChannel);
 					return;
-				}
-				if (r == 0) {
-					break;
 				}
 				if (!lenBuffer.hasRemaining()) {
 					lenBuffer.position(0);
@@ -64,22 +72,30 @@ public class Session {
 					inboundBuffer.limit(currentLen);
 				}
 			} else {
-				int r = this.channel.read(inboundBuffer);
-				if (r == -1) {
-					logger.error("Connection " + selectableChannel + ", closed");
+
+				try {
+					int r = this.channel.read(inboundBuffer);
+					if (r == -1) {
+						logger.error("Connection " + selectableChannel + ", closed");
+						selectableChannel.close();
+						this.server.unregister(selectableChannel);
+					}
+
+					if (r <= 0) {
+						break;
+					}
+					if (!inboundBuffer.hasRemaining()) {
+						inboundBuffer.position(0);
+						processMessage();
+						inboundBuffer.clear();
+						lenBuffer.clear();
+						currentLen = -1;
+					}
+				} catch (IOException e) {
+					logger.error("IO exception on channel " + selectableChannel + ", closing");
 					selectableChannel.close();
 					this.server.unregister(selectableChannel);
-				}
-
-				if (r <= 0) {
-					break;
-				}
-				if (!inboundBuffer.hasRemaining()) {
-					inboundBuffer.position(0);
-					processMessage();
-					inboundBuffer.clear();
-					lenBuffer.clear();
-					currentLen = -1;
+					return;
 				}
 
 			}
@@ -108,6 +124,11 @@ public class Session {
 			case NetworkMessageConstants.MSG_SCAN:
 				onScan();
 				break;
+
+			case NetworkMessageConstants.MSG_SENSORARRAYMOVE:
+				onSensorArrayMove();
+				break;
+
 			default:
 				logger.error("Unexpected message type : " + messageType);
 
@@ -118,12 +139,24 @@ public class Session {
 
 	}
 
+	private void onSensorArrayMove() throws IOException {
+		int iclicks = inboundBuffer.getInt();
+		controller.blockingSensorArrayMove(iclicks);
+		outboundBuffer.position(0);
+		outboundBuffer.putInt(iclicks);
+		outboundBuffer.flip();
+		while (outboundBuffer.hasRemaining()) {
+			this.channel.write(outboundBuffer);
+		}
+	}
+
 	private void onScan() throws InterruptedException, IOException {
 
 		int scanSize = inboundBuffer.getInt();
 		int scanStep = inboundBuffer.getInt();
 		ScanData results = controller.fullScannerSweep(scanSize, scanStep);
 		outboundBuffer.position(0);
+		outboundBuffer.putInt(results.irData.length * 4 * 4);
 		write(outboundBuffer, results.irData);
 		write(outboundBuffer, results.irData2);
 		write(outboundBuffer, results.colorData);
@@ -154,10 +187,15 @@ public class Session {
 
 	}
 
-	private void onReverse() {
+	private void onReverse() throws IOException {
 		int iclicks = inboundBuffer.getInt();
-		controller.reverse(iclicks);
-
+		int clicksMoved = controller.reverse(iclicks);
+		outboundBuffer.position(0);
+		outboundBuffer.putInt(clicksMoved);
+		outboundBuffer.flip();
+		while (outboundBuffer.hasRemaining()) {
+			this.channel.write(outboundBuffer);
+		}
 	}
 
 	private void onAdvance() throws IOException {
