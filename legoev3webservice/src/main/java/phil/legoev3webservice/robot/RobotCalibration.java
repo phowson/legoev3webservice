@@ -21,4 +21,6 @@ public class RobotCalibration {
 	public static final int SENSOR_INFINITY_POINT_UNITS = (int) (SENSOR_INFINITY_POINT_CM/SENSOR_CM_PER_UNIT);
 	
 	
+	public static final double DANGER_RADIUS_CM = 5;
+	
 }
