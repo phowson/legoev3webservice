@@ -67,6 +67,7 @@ public class EnvironmentMap {
 
 	public void apply(RobotState currentState, FilteredSensorData sensorData) {
 		for (int i = 0; i < sensorData.distance_CM.length; ++i) {
+
 			double overallHeadingDeg = currentState.heading_DEG + sensorData.headings[i];
 			double overallHeadingRad = overallHeadingDeg * PI_180;
 
@@ -78,9 +79,8 @@ public class EnvironmentMap {
 			for (int z = 0; z < d2; ++z) {
 				int x = (int) Math.round(vecX * z + currentState.x_CM);
 				int y = (int) Math.round(vecY * z + currentState.y_CM);
-				int v = getAt(x, y);
-				if (v != HARD_OBSTRUCTION)
-					setAt(x, y, KNOWN_CLEAR);
+
+				setArea(x, y, KNOWN_CLEAR);
 			}
 
 			if (!Double.isInfinite(dist)) {
@@ -90,7 +90,7 @@ public class EnvironmentMap {
 
 				fillInArea(obstructionX, obstructionY, DANGER, RobotCalibration.DANGER_RADIUS_CM);
 
-				setAt(obstructionX, obstructionY, OBSTRUCTION);
+				setArea(obstructionX, obstructionY, OBSTRUCTION);
 
 			}
 
@@ -98,11 +98,26 @@ public class EnvironmentMap {
 
 	}
 
+	private void setArea(int x, int y, int v) {
+
+		safeSetAt(x, y, v);
+		safeSetAt(x - 1, y, v);
+		safeSetAt(x + 1, y, v);
+		safeSetAt(x, y - 1, v);
+		safeSetAt(x, y + 1, v);
+
+	}
+
+	private void safeSetAt(int x, int y, int z) {
+		int v = getAt(x, y);
+		if (v != HARD_OBSTRUCTION) {
+			setAt(x, y, z);
+		}
+	}
+
 	private void fillInArea(int obstructionX, int obstructionY, int vz, double radius) {
-		for (int dx = (int) (obstructionX - radius); dx < obstructionX
-				+ radius; ++dx) {
-			for (int dy = (int) (obstructionY - radius); dy < obstructionY
-					+ radius; ++dy) {
+		for (int dx = (int) (obstructionX - radius); dx < obstructionX + radius; ++dx) {
+			for (int dy = (int) (obstructionY - radius); dy < obstructionY + radius; ++dy) {
 				double xdst = (dx - obstructionX);
 				double ydst = (dy - obstructionY);
 				double zz = Math.sqrt(xdst * xdst + ydst * ydst);
