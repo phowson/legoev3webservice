@@ -3,7 +3,7 @@ package phil.legoev3webservice.robot;
 public class RobotCalibration {
 	public static final int SCAN_ITERS = 180;
 	public static final int SCAN_CLICKS_PER_ITER = 27;
-	public static final double SCAN_DEGREES_PER_VALUE = 180.0 / 162.0;
+	public static final double SCAN_DEGREES_PER_VALUE = 180.0 / SCAN_ITERS;
 
 	
 	public static final int ROTATE_CLICKS_PER_90DEGREES = 530;

@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import phil.legoev3webservice.client.RobotClient;
 import phil.legoev3webservice.control.AdvanceResults;
 import phil.legoev3webservice.control.ScanData;
+import phil.legoev3webservice.control.ScanDataFilter;
 import phil.legoev3webservice.robot.RobotCalibration;
 
 public class GUIClient {
@@ -21,15 +22,21 @@ public class GUIClient {
 	}
 
 	private void run() {
-		ScanData scanResults = this.client.fullScannerSweep(180, 27);
+		ScanData scanResults = this.client.fullScannerSweep(RobotCalibration.SCAN_ITERS, RobotCalibration.SCAN_CLICKS_PER_ITER);
 		System.out.println(scanResults);
-		
-//		this.client.rotate(530*4);
-		
-		//this.client.reverse(500);
-		
-//		AdvanceResults res = this.client.advanceWithoutCollision((int) (50*RobotCalibration.MOVE_CLICKS_PER_CM));
-//		System.out.println(res);
+
+		System.out.println(new ScanDataFilter().filter(scanResults));
+
+		// this.client.rotate(530*4);
+
+		// this.client.reverse(500);
+
+		// AdvanceResults res = this.client.advanceWithoutCollision((int)
+		// (50*RobotCalibration.MOVE_CLICKS_PER_CM));
+		// System.out.println(res);
+		// System.out.println((res.startProximity - res.endProximity) *
+		// RobotCalibration.SENSOR_CM_PER_UNIT);
+
 	}
 
 }
