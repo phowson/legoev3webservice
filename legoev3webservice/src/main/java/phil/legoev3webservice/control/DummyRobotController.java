@@ -1,6 +1,8 @@
-package phil.legoev3webservice;
+package phil.legoev3webservice.control;
 
 import org.slf4j.LoggerFactory;
+
+import phil.legoev3webservice.server.Session;
 
 public class DummyRobotController implements RobotController {
 

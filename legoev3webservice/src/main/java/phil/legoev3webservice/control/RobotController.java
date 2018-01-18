@@ -1,4 +1,4 @@
-package phil.legoev3webservice;
+package phil.legoev3webservice.control;
 
 public interface RobotController {
 

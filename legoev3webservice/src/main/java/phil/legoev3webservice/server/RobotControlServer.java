@@ -1,4 +1,4 @@
-package phil.legoev3webservice;
+package phil.legoev3webservice.server;
 
 import java.awt.Robot;
 import java.io.IOException;
@@ -11,6 +11,8 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 import org.slf4j.LoggerFactory;
+
+import phil.legoev3webservice.control.RobotController;
 
 public class RobotControlServer {
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RobotControlServer.class);

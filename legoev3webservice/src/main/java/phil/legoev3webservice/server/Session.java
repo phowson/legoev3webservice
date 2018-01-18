@@ -1,4 +1,4 @@
-package phil.legoev3webservice;
+package phil.legoev3webservice.server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -6,6 +6,11 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
 
 import org.slf4j.LoggerFactory;
+
+import phil.legoev3webservice.NetworkMessageConstants;
+import phil.legoev3webservice.control.AdvanceResults;
+import phil.legoev3webservice.control.RobotController;
+import phil.legoev3webservice.control.ScanData;
 
 public class Session {
 

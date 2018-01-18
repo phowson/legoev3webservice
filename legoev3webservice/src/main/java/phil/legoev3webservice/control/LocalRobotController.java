@@ -1,4 +1,4 @@
-package phil.legoev3webservice;
+package phil.legoev3webservice.control;
 
 import org.ev3dev.hardware.motors.Motor;
 import org.ev3dev.hardware.ports.LegoPort;
@@ -18,13 +18,7 @@ public class LocalRobotController implements RobotController {
 	private Motor rightMotor = new Motor(new LegoPort(LegoPort.OUTPUT_B));
 
 	public int rotate(int iclicks) {
-		leftMotor.reset();
-		leftMotor.setStopAction("brake");
-		leftMotor.setSpeed_SP(100);
-
-		rightMotor.reset();
-		rightMotor.setStopAction("brake");
-		rightMotor.setSpeed_SP(100);
+		setupMainMotors();
 
 		int clicks;
 		if (iclicks > 0) {
@@ -37,8 +31,8 @@ public class LocalRobotController implements RobotController {
 			rightMotor.setPolarity("normal");
 		}
 
-		int initalPosL = Integer.parseInt(leftMotor.getAttribute(POSITION));
-		int initalPosR = Integer.parseInt(rightMotor.getAttribute(POSITION));
+		int initalPosL = getLeftMotorPosition();
+		int initalPosR = getRightMotorPosition();
 
 		leftMotor.setPosition_SP(clicks);
 		rightMotor.setPosition_SP(clicks);
@@ -49,57 +43,65 @@ public class LocalRobotController implements RobotController {
 		leftMotor.runToRelPos();
 		rightMotor.runToRelPos();
 
-		while (Integer.parseInt(leftMotor.getAttribute(POSITION)) < leftTarget
-				|| Integer.parseInt(rightMotor.getAttribute(POSITION)) < rightTarget) {
-			Thread.yield();
+		while (getLeftMotorPosition() < leftTarget || getRightMotorPosition() < rightTarget) {
+			if (touchSensor.isPressed()) {
+				leftMotor.stop();
+				rightMotor.stop();
+				break;
+			}
 		}
-		int finalPosL = Integer.parseInt(leftMotor.getAttribute(POSITION));
-		int finalPosR = Integer.parseInt(rightMotor.getAttribute(POSITION));
+		int finalPosL = getLeftMotorPosition();
+		int finalPosR = getRightMotorPosition();
 
 		int d = ((finalPosL - initalPosL) + (finalPosR - initalPosR)) / 2;
 		return d;
 	}
 
-	public int reverse(int clicks) {
+	private void setupMainMotors() {
 		leftMotor.reset();
 		leftMotor.setStopAction("brake");
 		leftMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
 
 		rightMotor.reset();
 		rightMotor.setStopAction("brake");
-		rightMotor.setSpeed_SP(100);
+		rightMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
+	}
 
-		int initalPosL = Integer.parseInt(leftMotor.getAttribute(POSITION));
-		int initalPosR = Integer.parseInt(rightMotor.getAttribute(POSITION));
+	public int reverse(int clicks) {
+		setupMainMotors();
+
+		int initalPosL = getLeftMotorPosition();
+		int initalPosR = getRightMotorPosition();
 		int leftTarget = initalPosL + clicks;
 		int rightTarget = initalPosR + clicks;
 		leftMotor.setPosition_SP(clicks);
 		rightMotor.setPosition_SP(clicks);
 		leftMotor.runToRelPos();
 		rightMotor.runToRelPos();
-		while (Integer.parseInt(leftMotor.getAttribute(POSITION)) < leftTarget
-				|| Integer.parseInt(rightMotor.getAttribute(POSITION)) < rightTarget) {
+		while (getLeftMotorPosition() < leftTarget || getRightMotorPosition() < rightTarget) {
 			Thread.yield();
 		}
-		int finalPosL = Integer.parseInt(leftMotor.getAttribute(POSITION));
-		int finalPosR = Integer.parseInt(rightMotor.getAttribute(POSITION));
+		int finalPosL = getLeftMotorPosition();
+		int finalPosR = getRightMotorPosition();
 
 		int d = ((finalPosL - initalPosL) + (finalPosR - initalPosR)) / 2;
 		return d;
+	}
+
+	private int getRightMotorPosition() {
+		return Integer.parseInt(rightMotor.getAttribute(POSITION));
+	}
+
+	private int getLeftMotorPosition() {
+		return Integer.parseInt(leftMotor.getAttribute(POSITION));
 	}
 
 	public AdvanceResults advanceWithoutCollision(int clicks) {
 
-		leftMotor.reset();
-		leftMotor.setStopAction("brake");
-		leftMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
+		setupMainMotors();
 
-		rightMotor.reset();
-		rightMotor.setStopAction("brake");
-		rightMotor.setSpeed_SP(100);
-
-		int initalPosL = Integer.parseInt(leftMotor.getAttribute(POSITION));
-		int initalPosR = Integer.parseInt(rightMotor.getAttribute(POSITION));
+		int initalPosL = getLeftMotorPosition();
+		int initalPosR = getRightMotorPosition();
 
 		leftMotor.setPosition_SP(clicks);
 		rightMotor.setPosition_SP(clicks);
@@ -114,13 +116,21 @@ public class LocalRobotController implements RobotController {
 		if (prox > 0 && intensity < 10 && !touchSensor.isPressed()) {
 			leftMotor.runToRelPos();
 			rightMotor.runToRelPos();
-			while (Integer.parseInt(leftMotor.getAttribute(POSITION)) < leftTarget
-					|| Integer.parseInt(rightMotor.getAttribute(POSITION)) < rightTarget) {
+			while (getLeftMotorPosition() < leftTarget || getRightMotorPosition() < rightTarget) {
 
+				// Querying the sensor takes a bit of time, so act as soon as we
+				// have a value
 				prox = irSensor.getProximity();
-				intensity = colorSensor.getReflectedLightIntensity();
+				if (prox == 0) {
+					leftMotor.stop();
+					rightMotor.stop();
+					break;
+				}
 
-				if (prox == 0 || intensity > 10 || touchSensor.isPressed()) {
+				intensity = colorSensor.getReflectedLightIntensity();
+				// Querying the sensor takes a bit of time, so act as soon as we
+				// have a value
+				if (intensity > 10 || touchSensor.isPressed()) {
 					leftMotor.stop();
 					rightMotor.stop();
 					break;
@@ -128,8 +138,8 @@ public class LocalRobotController implements RobotController {
 
 			}
 		}
-		int finalPosL = Integer.parseInt(leftMotor.getAttribute(POSITION));
-		int finalPosR = Integer.parseInt(rightMotor.getAttribute(POSITION));
+		int finalPosL = getLeftMotorPosition();
+		int finalPosR = getRightMotorPosition();
 
 		int d = ((finalPosL - initalPosL) + (finalPosR - initalPosR)) / 2;
 		return new AdvanceResults(d, startProx, prox, colorSensor.getReflectedLightIntensity(),
@@ -175,11 +185,7 @@ public class LocalRobotController implements RobotController {
 		int pos = getSensorArrayPosition();
 		int target = pos;
 		for (int i = 0; i < steps; ++i) {
-
-			int prox = irSensor.getProximity();
-			// System.out.println("Proximity = " + prox + "%");
-			// System.out.println("Approx = " + 70.0 * (prox / 100.0) + "cm");
-			irData[idx] = prox;
+			irData[idx] = irSensor.getProximity();
 			colorData[idx] = colorSensor.getReflectedLightIntensity();
 
 			target += sensorScanStep;
