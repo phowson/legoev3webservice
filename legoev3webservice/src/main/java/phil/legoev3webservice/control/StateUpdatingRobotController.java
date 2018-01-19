@@ -92,4 +92,12 @@ public class StateUpdatingRobotController implements RobotController {
 		controller.blockingSensorArrayMove(target);
 	}
 
+	@Override
+	public ContinuousScanData continuousScannerSweep(int scanSteps) {
+		ContinuousScanData data = controller.continuousScannerSweep(scanSteps);
+		map.apply(state, filter.filter(data));
+		map.fillVisited((int) state.x_CM, (int) state.y_CM, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+		return data;
+	}
+
 }

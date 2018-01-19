@@ -9,6 +9,8 @@ public interface RobotController {
 	int reverse(int clicks);
 
 	ScanData fullScannerSweep(int scanSize, int scanStep) ;
+	
+	ContinuousScanData continuousScannerSweep(int scanSteps) ;
 
 	void blockingSensorArrayMove(int target);
 

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import phil.legoev3webservice.NetworkMessageConstants;
 import phil.legoev3webservice.control.AdvanceResults;
+import phil.legoev3webservice.control.ContinuousScanData;
 import phil.legoev3webservice.control.RobotController;
 import phil.legoev3webservice.control.ScanData;
 
@@ -129,6 +130,10 @@ public class Session {
 				onSensorArrayMove();
 				break;
 
+			case NetworkMessageConstants.MSG_CONT_SCAN:
+				onContScan();
+				break;
+
 			default:
 				logger.error("Unexpected message type : " + messageType);
 
@@ -161,6 +166,21 @@ public class Session {
 		write(outboundBuffer, results.irData2);
 		write(outboundBuffer, results.colorData);
 		write(outboundBuffer, results.colorData2);
+		outboundBuffer.flip();
+		while (outboundBuffer.hasRemaining()) {
+			this.channel.write(outboundBuffer);
+		}
+
+	}
+
+	private void onContScan() throws IOException {
+		int scanClicks = inboundBuffer.getInt();
+		ContinuousScanData results = controller.continuousScannerSweep(scanClicks);
+		outboundBuffer.position(0);
+		outboundBuffer.putInt(results.irSensor.length * 8);
+		write(outboundBuffer, results.steps);
+		write(outboundBuffer, results.irSensor);
+
 		outboundBuffer.flip();
 		while (outboundBuffer.hasRemaining()) {
 			this.channel.write(outboundBuffer);

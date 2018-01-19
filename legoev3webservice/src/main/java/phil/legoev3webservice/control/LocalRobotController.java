@@ -8,8 +8,10 @@ import org.ev3dev.hardware.sensors.TouchSensor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gnu.trove.list.array.TIntArrayList;
+
 public class LocalRobotController implements RobotController {
-	private static final int SENSOR_MOTOR_SPEED = 500;
+	private static final int SENSOR_MOTOR_SPEED = 1000;
 	private static final Logger logger = LoggerFactory.getLogger(LocalRobotController.class);
 	private static final int MAIN_MOTOR_SPEED = 100;
 	private static final int MAIN_MOTOR_SPEED_ROTATE = 66;
@@ -211,6 +213,22 @@ public class LocalRobotController implements RobotController {
 		}
 	}
 
+	private void contSensorSweep(int clicks, int startVal, int multiplier, TIntArrayList clickData,
+			TIntArrayList irData) {
+		irSensor.setMode("IR-PROX");
+		colorSensor.setMode(ColorSensor.SYSFS_REFLECTED_LIGHT_INTENSITY_MODE);
+
+		int startPos = getSensorArrayPosition();
+		sensorArrayMotor.setPosition_SP(clicks);
+		sensorArrayMotor.runToRelPos();
+
+		while (sensorArrayMotor.getStateViaString().contains("running")) {
+			clickData.add((getSensorArrayPosition() - startPos) * multiplier + startVal);
+			irData.add(irSensor.getProximity());
+		}
+
+	}
+
 	private void configureSensorMotor() {
 		sensorArrayMotor.reset();
 		sensorArrayMotor.setStopAction("brake");
@@ -242,6 +260,20 @@ public class LocalRobotController implements RobotController {
 		}
 		blockingSensorArrayMoveImpl(getSensorArrayPosition() + target);
 		logger.info("Move complete");
+	}
+
+	@Override
+	public ContinuousScanData continuousScannerSweep(int scanSteps) {
+		TIntArrayList clickData = new TIntArrayList();
+		TIntArrayList irData = new TIntArrayList();
+		sensorArrayMotor.setPolarity("normal");
+		contSensorSweep(scanSteps / 2, 0, 1, clickData, irData);
+		sensorArrayMotor.setPolarity("inversed");
+		contSensorSweep(scanSteps, clickData.get(clickData.size() - 1), -1, clickData, irData);
+		sensorArrayMotor.setPolarity("normal");
+		contSensorSweep(scanSteps / 2, clickData.get(clickData.size() - 1), 1, clickData, irData);
+
+		return new ContinuousScanData(clickData.toArray(), irData.toArray());
 	}
 
 }

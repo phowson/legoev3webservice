@@ -6,4 +6,5 @@ public class NetworkMessageConstants {
 	public static final int MSG_ROTATE = 2;
 	public static final int MSG_SCAN = 3;
 	public static final byte MSG_SENSORARRAYMOVE = 4;
+	public static final byte MSG_CONT_SCAN = 5;
 }

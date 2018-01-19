@@ -32,4 +32,9 @@ public class DummyRobotController implements RobotController {
 		logger.info("Got command to do a blocking sensor array move : " + target);
 	}
 
+	@Override
+	public ContinuousScanData continuousScannerSweep(int scanSteps) {
+		return new ContinuousScanData(new int[scanSteps], new int[scanSteps]);
+	}
+
 }

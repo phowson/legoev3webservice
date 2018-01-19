@@ -378,7 +378,7 @@ public class GUIClient implements PathListener {
 			@Override
 			public void run() {
 				try {
-					contoller.fullScannerSweep(RobotCalibration.SCAN_ITERS, RobotCalibration.SCAN_CLICKS_PER_ITER);
+					contoller.continuousScannerSweep(RobotCalibration.SCAN_CLICKS_IN_FULL_SCAN);
 					updateGui();
 				} catch (Exception ex) {
 					ex.printStackTrace();

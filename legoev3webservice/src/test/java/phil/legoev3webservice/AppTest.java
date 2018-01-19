@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import phil.legoev3webservice.client.RobotClient;
 import phil.legoev3webservice.control.AdvanceResults;
+import phil.legoev3webservice.control.ContinuousScanData;
 import phil.legoev3webservice.control.DummyRobotController;
 import phil.legoev3webservice.control.ScanData;
 import phil.legoev3webservice.server.RobotControlServer;
@@ -100,6 +101,19 @@ public class AppTest extends TestCase {
 			assertEquals(10, res.irData2.length);
 
 			for (int i : res.irData) {
+				assertEquals(0, i);
+			}
+
+		}
+	}
+
+	public void testContScan() throws Exception {
+		try (RobotClient client = new RobotClient(new InetSocketAddress("localhost", 5050));) {
+			ContinuousScanData res = client.continuousScannerSweep(10);
+			assertEquals(10, res.steps.length);
+			assertEquals(10, res.irSensor.length);
+
+			for (int i : res.steps) {
 				assertEquals(0, i);
 			}
 

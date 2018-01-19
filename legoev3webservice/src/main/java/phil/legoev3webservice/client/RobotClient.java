@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import phil.legoev3webservice.NetworkMessageConstants;
 import phil.legoev3webservice.control.AdvanceResults;
+import phil.legoev3webservice.control.ContinuousScanData;
 import phil.legoev3webservice.control.RobotController;
 import phil.legoev3webservice.control.ScanData;
 
@@ -163,6 +164,42 @@ public class RobotClient implements RobotController, Closeable {
 	public void close() throws IOException {
 		this.socket.close();
 
+	}
+
+	@Override
+	public ContinuousScanData continuousScannerSweep(int scanSteps) {
+		try {
+			outBuffer.clear();
+			outBuffer.putInt(5);
+			outBuffer.put((byte) NetworkMessageConstants.MSG_CONT_SCAN);
+			outBuffer.putInt(scanSteps);
+			outBuffer.flip();
+			this.socket.write(outBuffer);
+			inBuffer.clear();
+			inBuffer.limit(4);
+			while (inBuffer.hasRemaining()) {
+				this.socket.read(inBuffer);
+			}
+			inBuffer.flip();
+			int len = inBuffer.getInt();
+			inBuffer.clear();
+			inBuffer.limit(len);
+			while (inBuffer.hasRemaining()) {
+				this.socket.read(inBuffer);
+			}
+			inBuffer.flip();
+
+			int[] clicks = new int[len / 8];
+			int[] irData = new int[len / 8];
+
+			readIntArray(clicks);
+			readIntArray(irData);
+
+			return new ContinuousScanData(clicks, irData);
+		} catch (IOException e) {
+			logger.error("IO Error", e);
+			throw new RuntimeException(e);
+		}
 	}
 
 }

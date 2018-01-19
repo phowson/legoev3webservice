@@ -44,7 +44,7 @@ public class ScanDataFilter {
 				Arrays.sort(d);
 
 				out.headings[i] = heading;
-				dst = interpolate(0.25 * (d[1] + d[2] + d[3] + d[4])) ;
+				dst = interpolate(0.25 * (d[1] + d[2] + d[3] + d[4]));
 			}
 
 			if (dst >= RobotCalibration.SENSOR_INFINITY_POINT_CM) {
@@ -63,7 +63,7 @@ public class ScanDataFilter {
 	public static void main(String[] args) {
 		System.out.println(interpolate(1));
 	}
-	
+
 	public static double interpolate(double pc) {
 		for (int i = 1; i < RobotCalibration.SENSOR_CALIBRATION_CM.length; ++i) {
 			if (RobotCalibration.SENSOR_CALIBRATION_PC[i] >= pc) {
@@ -71,11 +71,28 @@ public class ScanDataFilter {
 				double z = pc - prev;
 				double d = RobotCalibration.SENSOR_CALIBRATION_PC[i] - prev;
 				double dC = RobotCalibration.SENSOR_CALIBRATION_CM[i] - RobotCalibration.SENSOR_CALIBRATION_CM[i - 1];
-				return dC * (z / d) + RobotCalibration.SENSOR_CALIBRATION_CM[i-1];
+				return dC * (z / d) + RobotCalibration.SENSOR_CALIBRATION_CM[i - 1];
 			}
 
 		}
 		return Double.POSITIVE_INFINITY;
+	}
+
+	public FilteredSensorData filter(ContinuousScanData data) {
+
+		double[] headings = new double[data.steps.length];
+		double[] distance_CM = new double[data.steps.length];
+		for (int i = 0; i < headings.length; ++i) {
+			headings[i] = -data.steps[i] * RobotCalibration.SCAN_DEGREES_PER_CLICK;
+			double dst = interpolate(data.irSensor[i]);
+			if (dst >= RobotCalibration.SENSOR_INFINITY_POINT_CM) {
+				dst = Double.POSITIVE_INFINITY;
+			}
+			distance_CM[i] = dst;
+		}
+
+		FilteredSensorData out = new FilteredSensorData(headings, distance_CM);
+		return out;
 	}
 
 }
