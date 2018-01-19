@@ -12,6 +12,7 @@ public class LocalRobotController implements RobotController {
 	private static final int SENSOR_MOTOR_SPEED = 500;
 	private static final Logger logger = LoggerFactory.getLogger(LocalRobotController.class);
 	private static final int MAIN_MOTOR_SPEED = 100;
+	private static final int MAIN_MOTOR_SPEED_ROTATE = 66;
 	private static final String POSITION = "position";
 	private InfraredSensor irSensor = new InfraredSensor(new LegoPort(LegoPort.INPUT_1));
 	private ColorSensor colorSensor = new ColorSensor(new LegoPort(LegoPort.INPUT_2));
@@ -22,7 +23,7 @@ public class LocalRobotController implements RobotController {
 	private Motor rightMotor = new Motor(new LegoPort(LegoPort.OUTPUT_B));
 
 	public int rotate(int iclicks) {
-		setupMainMotors();
+		setupMainMotors(true);
 
 		int clicks;
 		if (iclicks > 0) {
@@ -61,18 +62,22 @@ public class LocalRobotController implements RobotController {
 		return d;
 	}
 
-	private void setupMainMotors() {
+	private void setupMainMotors(boolean rotation) {
 		leftMotor.reset();
 		leftMotor.setStopAction("brake");
-		leftMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
-
 		rightMotor.reset();
 		rightMotor.setStopAction("brake");
-		rightMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
+		if (rotation) {
+			leftMotor.setSpeed_SP(MAIN_MOTOR_SPEED_ROTATE);
+			rightMotor.setSpeed_SP(MAIN_MOTOR_SPEED_ROTATE);
+		} else {
+			leftMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
+			rightMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
+		}
 	}
 
 	public int reverse(int clicks) {
-		setupMainMotors();
+		setupMainMotors(false);
 		leftMotor.setPolarity("inversed");
 		rightMotor.setPolarity("inversed");
 
@@ -113,7 +118,7 @@ public class LocalRobotController implements RobotController {
 
 	public AdvanceResults advanceWithoutCollision(int clicks) {
 
-		setupMainMotors();
+		setupMainMotors(false);
 		leftMotor.setPolarity("normal");
 		rightMotor.setPolarity("normal");
 
@@ -195,8 +200,7 @@ public class LocalRobotController implements RobotController {
 
 		int idx = startIdx;
 
-		int pos = getSensorArrayPosition();
-		int target = pos;
+		int target = getSensorArrayPosition();
 		for (int i = 0; i < steps; ++i) {
 			irData[idx] = irSensor.getProximity();
 			colorData[idx] = colorSensor.getReflectedLightIntensity();
@@ -217,11 +221,8 @@ public class LocalRobotController implements RobotController {
 		sensorArrayMotor.setPosition_SP(target - getSensorArrayPosition());
 		sensorArrayMotor.runToRelPos();
 
-		while (getSensorArrayPosition() < target) {
+		while (sensorArrayMotor.getStateViaString().contains("running")) {
 			Thread.yield();
-			if (!sensorArrayMotor.getStateViaString().contains("running")) {
-				break;
-			}
 		}
 	}
 

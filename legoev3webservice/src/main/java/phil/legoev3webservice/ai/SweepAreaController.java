@@ -31,7 +31,7 @@ public class SweepAreaController {
 	private boolean findNextUnvisitedPoint() {
 		environmentMap.fillVisited((int) state.x_CM, (int) state.y_CM, (int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		Point point = environmentMap.findClosestUnvisited((int) state.x_CM, (int) state.y_CM,
-				(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM, true);
+				(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM, false);
 
 		if (point == null) {
 			return false;
@@ -53,7 +53,7 @@ public class SweepAreaController {
 		int y_CM = this.autoDriveController.getaStarAlgorithm().getTargetY();
 		int v = environmentMap.getAt(x_CM, y_CM);
 
-		if (v != EnvironmentMap.KNOWN_CLEAR && v != EnvironmentMap.UNKNOWN && v!=EnvironmentMap.DANGER) {
+		if (v != EnvironmentMap.KNOWN_CLEAR) {
 			// No longer unoccupied?
 			if (!findNextUnvisitedPoint()) {
 				return false;

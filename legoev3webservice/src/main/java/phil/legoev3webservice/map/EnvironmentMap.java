@@ -38,7 +38,8 @@ public class EnvironmentMap implements Serializable {
 	public Point findClosestUnvisited(int x, int y, int minDist, boolean inverse) {
 		int sx = -1;
 		int sy = -1;
-		double bestSoFar = Double.POSITIVE_INFINITY;
+		double bestSoFar = inverse ? 0 : Double.POSITIVE_INFINITY;
+		
 		for (int k : mapData.keys()) {
 			int md = mapData.get(k);
 			if (visitedData.get(k) == 0 && md == KNOWN_CLEAR) {
