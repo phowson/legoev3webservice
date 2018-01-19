@@ -31,7 +31,11 @@ public class SweepAreaController {
 	private boolean findNextUnvisitedPoint() {
 		environmentMap.fillVisited((int) state.x_CM, (int) state.y_CM, (int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		Point point = environmentMap.findClosestUnvisited((int) state.x_CM, (int) state.y_CM,
-				(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM, false);
+				(int) RobotCalibration.SENSOR_INFINITY_POINT_CM-1, false);
+		if (point==null) {
+			point = environmentMap.findClosestUnvisited((int) state.x_CM, (int) state.y_CM,
+					(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM, false);
+		}
 
 		if (point == null) {
 			return false;

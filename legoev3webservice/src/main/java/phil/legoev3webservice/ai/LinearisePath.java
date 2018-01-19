@@ -35,14 +35,13 @@ public class LinearisePath {
 		}
 		int i = 0;
 		boolean ignoreLineOk = false;
-		while (i < path.size() - 1) {
+		while (i < path.size() ) {
 			double cost = computeLineCost(path, i);
 
 			if (!ignoreLineOk && !lineIsOk(path, i)) {
 				if (i < 2) {
 					ignoreLineOk = true;
 				} else {
-					i = i - 1;
 					break;
 				}
 			}
@@ -52,6 +51,10 @@ public class LinearisePath {
 			}
 			i = i + 1;
 		}
+		if (i>0){
+			i = i - 1;
+		}
+		
 		Point pi = path.get(i);
 		double finalX = pi.getX();
 		double finalY = pi.getY();
