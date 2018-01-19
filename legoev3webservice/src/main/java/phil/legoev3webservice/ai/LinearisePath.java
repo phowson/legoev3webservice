@@ -34,8 +34,19 @@ public class LinearisePath {
 			return new RobotMoveCommand(0, 0);
 		}
 		int i = 0;
+		boolean ignoreLineOk = false;
 		while (i < path.size() - 1) {
 			double cost = computeLineCost(path, i);
+
+			if (!ignoreLineOk && !lineIsOk(path, i)) {
+				if (i == 0) {
+					ignoreLineOk = true;
+				} else {
+					i = i - 1;
+					break;
+				}
+			}
+
 			if (cost > maxAllowableCost) {
 				break;
 			}
@@ -60,6 +71,31 @@ public class LinearisePath {
 		}
 		return new RobotMoveCommand(heading, dist);
 
+	}
+
+	private boolean lineIsOk(List<Point> path, int i) {
+		Point pi = path.get(i);
+		double finalX = pi.getX();
+		double finalY = pi.getY();
+
+		double dx = finalX - state.x_CM;
+		double dy = finalY - state.y_CM;
+		double l = Math.round(Math.sqrt(dx * dx + dy * dy));
+		double dx1 = dx / l;
+		double dy1 = dy / l;
+		double x = state.x_CM;
+		double y = state.y_CM;
+		for (int z = 0; z < l; ++z) {
+			int v = map.getAt((int) x, (int) y);
+			if (v == EnvironmentMap.OBSTRUCTION || v == EnvironmentMap.HARD_OBSTRUCTION || v==EnvironmentMap.DANGER) {
+				return false;
+			}
+			x += dx1;
+			y += dy1;
+
+		}
+
+		return true;
 	}
 
 	public double computeLineCost(List<Point> points, int index) {

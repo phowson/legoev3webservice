@@ -24,7 +24,7 @@ public class TestAStar {
 		state.y_CM = 500;
 
 		EnvironmentMap map = EnvironmentMap.load("testmap1");
-		AStarAlgorithm alg = new AStarAlgorithm(state, map, 500, 510);
+		AStarAlgorithm alg = new AStarAlgorithm(state, map, 999, 500);
 
 		for (int i = 0; i < 10; ++i) {
 			List<Point> path = alg.getAStarPath();

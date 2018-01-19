@@ -75,7 +75,9 @@ public class EnvironmentMap implements Serializable {
 	}
 
 	public boolean isVisited(int x_CM, int y_CM) {
-		return visitedData.get(genKey(x_CM, y_CM)) == 1;
+		if (visitedData!=null)
+			return visitedData.get(genKey(x_CM, y_CM)) == 1;
+		return false;
 	}
 
 	public double getAStarDist(int x_CM, int y_CM) {
