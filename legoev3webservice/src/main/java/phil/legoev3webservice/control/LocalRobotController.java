@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LocalRobotController implements RobotController {
+	private static final int SENSOR_MOTOR_SPEED = 500;
 	private static final Logger logger = LoggerFactory.getLogger(LocalRobotController.class);
 	private static final int MAIN_MOTOR_SPEED = 100;
 	private static final String POSITION = "position";
@@ -160,8 +161,8 @@ public class LocalRobotController implements RobotController {
 	 */
 	public ScanData fullScannerSweep(int scanSize, int scanStep) {
 		int halfScan = scanSize / 2;
-		sensorArrayMotor.reset();
-
+		
+		configureSensorMotor();
 		int[] irData = new int[scanSize];
 		int[] irData2 = new int[scanSize];
 
@@ -182,7 +183,7 @@ public class LocalRobotController implements RobotController {
 	private void sensorSweep(int steps, int[] irData, int[] colorData, int startIdx, int incr, int sensorScanStep) {
 		irSensor.setMode("IR-PROX");
 		colorSensor.setMode(ColorSensor.SYSFS_REFLECTED_LIGHT_INTENSITY_MODE);
-		configureSensorMotor();
+
 
 		int idx = startIdx;
 
@@ -199,8 +200,9 @@ public class LocalRobotController implements RobotController {
 	}
 
 	private void configureSensorMotor() {
+		sensorArrayMotor.reset();
 		sensorArrayMotor.setStopAction("brake");
-		sensorArrayMotor.setSpeed_SP(300);
+		sensorArrayMotor.setSpeed_SP(SENSOR_MOTOR_SPEED);
 	}
 
 	private void blockingSensorArrayMoveImpl(int target) {
@@ -221,7 +223,6 @@ public class LocalRobotController implements RobotController {
 
 	public void blockingSensorArrayMove(int target) {
 		logger.info("Got sensor array move : " + target + " clicks");
-		sensorArrayMotor.reset();
 		configureSensorMotor();
 		if (target > 0) {
 			sensorArrayMotor.setPolarity("normal");

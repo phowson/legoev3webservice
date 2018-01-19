@@ -74,7 +74,7 @@ public class GUIClient implements PathListener {
 		state.x_CM = 500;
 		state.y_CM = 500;
 		EnvironmentMap map = new EnvironmentMap(1000);
-		LinearisePath linearisePath = new LinearisePath(state, map, 80, RobotCalibration.SENSOR_INFINITY_POINT_CM);
+		LinearisePath linearisePath = new LinearisePath(state, map, RobotCalibration.DEFAULT_LINEAR_TOLERANCE, RobotCalibration.SENSOR_INFINITY_POINT_CM);
 
 		StateUpdatingRobotController controller = new StateUpdatingRobotController(client, state, map);
 		AutoDriveController adc = new AutoDriveController(new AStarAlgorithm(state, map, 999, 500), controller, state,

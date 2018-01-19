@@ -9,6 +9,7 @@ import java.util.PriorityQueue;
 
 import phil.legoev3webservice.map.EnvironmentMap;
 import phil.legoev3webservice.map.RobotState;
+import phil.legoev3webservice.robot.RobotCalibration;
 
 public class AStarAlgorithm {
 
@@ -112,7 +113,7 @@ public class AStarAlgorithm {
 
 		if (c != EnvironmentMap.OBSTRUCTION && c != EnvironmentMap.HARD_OBSTRUCTION) {
 			if (c == EnvironmentMap.DANGER) {
-				d += 100;
+				d += RobotCalibration.AI_DANGER_PENALTY;
 			}
 			double existingDist = map.getAStarDist(x, y);
 			if (existingDist > pathLen) {
