@@ -27,4 +27,9 @@ public class SearchPoint implements Comparable<SearchPoint> {
 		}
 		return 0;
 	}
+
+	@Override
+	public String toString() {
+		return "[x=" + x + ", y=" + y + ", cost=" + cost + ", pathLength=" + pathLength + "]";
+	}
 }

@@ -39,7 +39,7 @@ public class EnvironmentMap implements Serializable {
 	public double getAStarDist(int x_CM, int y_CM) {
 		double d = aStarData.get(genKey(x_CM, y_CM));
 		if (d == 0) {
-			return Double.NaN;
+			return Double.POSITIVE_INFINITY;
 		}
 		return d - 1;
 	}

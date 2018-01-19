@@ -37,7 +37,14 @@ public class AStarAlgorithm {
 				finalPoint = sp;
 				break;
 			}
-
+			
+			if (this.map.getAStarDist(sp.x, sp.y) <= sp.pathLength) {
+				// Already know how to get here quicker
+				continue;
+			}
+			
+			
+			this.map.setAStarDist(sp.x, sp.y, sp.pathLength);
 			addSearchPoints(searchPoints, sp.x, sp.y, sp, sp.pathLength);
 
 		}
@@ -49,7 +56,6 @@ public class AStarAlgorithm {
 			finalPoint = finalPoint.pred;
 		}
 		Collections.reverse(out);
-		System.out.print(out);
 		return out;
 
 	}
@@ -79,7 +85,7 @@ public class AStarAlgorithm {
 		int dx = x - targetX;
 		int dy = y - targetY;
 
-		double d = Math.sqrt(dx * dx + dy * dy);
+		double d = Math.sqrt(dx * dx + dy * dy) + pathLen;
 
 		if (c != EnvironmentMap.OBSTRUCTION && c != EnvironmentMap.HARD_OBSTRUCTION) {
 			if (c == EnvironmentMap.DANGER) {

@@ -59,7 +59,7 @@ public class GUIClient {
 
 	private void run() {
 
-		mapImage = renderer.render(state, map, null);
+		mapImage = renderer.render(state, map, null, null);
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		JPanel mapPanel = new JPanel();
@@ -230,7 +230,7 @@ public class GUIClient {
 	protected void updateGui() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				renderer.render(state, map, mapImage);
+				renderer.render(state, map, mapImage, null);
 				frame.repaint();
 			}
 		});

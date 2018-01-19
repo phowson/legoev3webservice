@@ -56,7 +56,7 @@ public class EnvironmentMapPlay {
 
 		map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		map.apply(state, new ScanDataFilter().filter(sd));
-		BufferedImage image = new MapImageRenderer().render(state, map, null);
+		BufferedImage image = new MapImageRenderer().render(state, map, null, null);
 		File outputfile = new File("saved.png");
 		ImageIO.write(image, "png", outputfile);
 
