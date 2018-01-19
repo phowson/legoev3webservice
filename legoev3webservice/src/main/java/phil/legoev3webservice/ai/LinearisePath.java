@@ -39,7 +39,7 @@ public class LinearisePath {
 			double cost = computeLineCost(path, i);
 
 			if (!ignoreLineOk && !lineIsOk(path, i)) {
-				if (i == 0) {
+				if (i < 2) {
 					ignoreLineOk = true;
 				} else {
 					i = i - 1;
