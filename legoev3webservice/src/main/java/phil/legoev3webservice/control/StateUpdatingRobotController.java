@@ -34,8 +34,11 @@ public class StateUpdatingRobotController implements RobotController {
 
 	public synchronized int rotate(int iclicks) {
 		int r = controller.rotate(iclicks);
-
-		state.rotate(r * RobotCalibration.ROTATE_DEGREES_PER_CLICK);
+		int sn = 1;
+		if (iclicks<0) {
+			sn = -1;
+		}
+		state.rotate(r * RobotCalibration.ROTATE_DEGREES_PER_CLICK * sn);
 
 		return r;
 	}

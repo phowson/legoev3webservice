@@ -32,6 +32,12 @@ public class AutoDriveController {
 		return aStarAlgorithm;
 	}
 
+	public void initialise() {
+		robotController.fullScannerSweep(RobotCalibration.SCAN_ITERS, RobotCalibration.SCAN_CLICKS_PER_ITER);
+		robotController.rotate((int) (180 * RobotCalibration.ROTATE_CLICKS_PER_DEGREE));
+		robotController.fullScannerSweep(RobotCalibration.SCAN_ITERS, RobotCalibration.SCAN_CLICKS_PER_ITER);
+	}
+	
 	public List<Point> driveOneStep(PathListener listener) {
 		robotController.fullScannerSweep(RobotCalibration.SCAN_ITERS, RobotCalibration.SCAN_CLICKS_PER_ITER);
 		List<Point> path = aStarAlgorithm.getAStarPath();

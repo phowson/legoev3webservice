@@ -200,7 +200,7 @@ public class LocalRobotController implements RobotController {
 
 	private void configureSensorMotor() {
 		sensorArrayMotor.setStopAction("brake");
-		sensorArrayMotor.setSpeed_SP(200);
+		sensorArrayMotor.setSpeed_SP(300);
 	}
 
 	private void blockingSensorArrayMoveImpl(int target) {

@@ -16,7 +16,12 @@ public class AStarAlgorithm {
 	private final EnvironmentMap map;
 	private int targetX;
 	private int targetY;
+	private double tolerance = 10;
 	private final static double root2 = Math.sqrt(2);
+
+	public void setTolerance(double tolerance) {
+		this.tolerance = tolerance;
+	}
 
 	public AStarAlgorithm(RobotState state, EnvironmentMap map, int tx, int ty) {
 		this.state = state;
@@ -34,6 +39,10 @@ public class AStarAlgorithm {
 	}
 
 	public List<Point> getAStarPath() {
+		if (alreadyInTargetArea()) {
+			return Collections.emptyList();
+		}
+
 		this.map.resetAStarData();
 		PriorityQueue<SearchPoint> searchPoints = new PriorityQueue<>();
 		searchPoints.add(new SearchPoint((int) Math.round(state.x_CM), (int) Math.round(state.y_CM), 0, null, 0));
@@ -64,6 +73,14 @@ public class AStarAlgorithm {
 		Collections.reverse(out);
 		return out;
 
+	}
+
+	private boolean alreadyInTargetArea() {
+
+		double dx = targetX - state.x_CM;
+		double dy = targetY - state.y_CM;
+
+		return Math.sqrt(dx * dx + dy * dy) < tolerance;
 	}
 
 	private void addSearchPoints(PriorityQueue<SearchPoint> searchPoints, double x_CM, double y_CM, SearchPoint pred,

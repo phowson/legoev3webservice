@@ -28,6 +28,7 @@ import phil.legoev3webservice.ai.AutoDriveController;
 import phil.legoev3webservice.ai.LinearisePath;
 import phil.legoev3webservice.ai.PathListener;
 import phil.legoev3webservice.client.RobotClient;
+import phil.legoev3webservice.control.AutoDriveThread;
 import phil.legoev3webservice.control.RobotController;
 import phil.legoev3webservice.control.StateUpdatingRobotController;
 import phil.legoev3webservice.map.EnvironmentMap;
@@ -46,12 +47,21 @@ public class GUIClient implements PathListener {
 	private final Executor bgExec = Executors.newSingleThreadExecutor();
 	private AutoDriveController autoDriveController;
 	private volatile List<Point> currentPath;
+	private JLabel mapLabel;
+	private volatile AutoDriveThread autoDriveThread;
+	private JButton scanButton;
+	private JButton advanceButton;
+	private JButton rotateButton;
+	private JButton reverseButton;
+	private JButton trimButton;
+	private JButton autoDriveOne;
+	private JButton autoDrive;
 
-	public GUIClient(RobotClient robotClient, RobotState state, EnvironmentMap map,
+	public GUIClient(RobotController controller, RobotState state, EnvironmentMap map,
 			AutoDriveController autoDriveController) {
 		this.state = state;
 		this.map = map;
-		this.contoller = new StateUpdatingRobotController(robotClient, state, map);
+		this.contoller = controller;
 		this.autoDriveController = autoDriveController;
 	}
 
@@ -64,10 +74,12 @@ public class GUIClient implements PathListener {
 		state.x_CM = 500;
 		state.y_CM = 500;
 		EnvironmentMap map = new EnvironmentMap(1000);
-		LinearisePath linearisePath = new LinearisePath(state, map, 50, 30);
-		AutoDriveController adc = new AutoDriveController(new AStarAlgorithm(state, map, 999, 500), client, state,
+		LinearisePath linearisePath = new LinearisePath(state, map, 50, RobotCalibration.SENSOR_INFINITY_POINT_CM);
+
+		StateUpdatingRobotController controller = new StateUpdatingRobotController(client, state, map);
+		AutoDriveController adc = new AutoDriveController(new AStarAlgorithm(state, map, 999, 500), controller, state,
 				linearisePath);
-		new GUIClient(client, state, map, adc).run();
+		new GUIClient(controller, state, map, adc).run();
 	}
 
 	private void run() {
@@ -76,14 +88,14 @@ public class GUIClient implements PathListener {
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		JPanel mapPanel = new JPanel();
-		JLabel mapLabel = new JLabel(new ImageIcon(mapImage));
+		mapLabel = new JLabel(new ImageIcon(mapImage));
 		mapPanel.add(mapLabel);
 		JScrollPane mapScrollPane = new JScrollPane(mapPanel);
 		mainPanel.add(mapScrollPane, BorderLayout.CENTER);
 
 		JPanel southPanel = new JPanel(new FlowLayout());
 
-		JButton scanButton = new JButton("Scan");
+		scanButton = new JButton("Scan");
 		scanButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -93,7 +105,7 @@ public class GUIClient implements PathListener {
 		});
 		southPanel.add(scanButton);
 
-		JButton advanceButton = new JButton("Advance");
+		advanceButton = new JButton("Advance");
 		advanceButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -103,7 +115,7 @@ public class GUIClient implements PathListener {
 		});
 		southPanel.add(advanceButton);
 
-		JButton rotateButton = new JButton("Rotate");
+		rotateButton = new JButton("Rotate");
 		rotateButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -113,7 +125,7 @@ public class GUIClient implements PathListener {
 		});
 		southPanel.add(rotateButton);
 
-		JButton reverseButton = new JButton("Reverse");
+		reverseButton = new JButton("Reverse");
 		reverseButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -124,7 +136,7 @@ public class GUIClient implements PathListener {
 
 		southPanel.add(reverseButton);
 
-		JButton trimButton = new JButton("Trim sensors");
+		trimButton = new JButton("Trim sensors");
 		trimButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -135,7 +147,7 @@ public class GUIClient implements PathListener {
 
 		southPanel.add(trimButton);
 
-		JButton autoDriveOne = new JButton("Auto drive one step");
+		autoDriveOne = new JButton("Auto drive one step");
 		autoDriveOne.addActionListener(new ActionListener() {
 
 			@Override
@@ -146,7 +158,7 @@ public class GUIClient implements PathListener {
 
 		southPanel.add(autoDriveOne);
 
-		JButton autoDrive = new JButton("Auto drive");
+		autoDrive = new JButton("Auto drive");
 		autoDrive.addActionListener(new ActionListener() {
 
 			@Override
@@ -199,17 +211,59 @@ public class GUIClient implements PathListener {
 	}
 
 	protected void onStop() {
-		// TODO Auto-generated method stub
+		autoDriveThread.requestStop();
+		bgExec.execute(new Runnable() {
 
+			@Override
+			public void run() {
+				try {
+					autoDriveThread.join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				autoDriveThread = null;
+
+				setControlsEnabled(true);
+			}
+		});
+
+	}
+
+	protected void setControlsEnabled(boolean b) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+
+				scanButton.setEnabled(b);
+				advanceButton.setEnabled(b);
+				rotateButton.setEnabled(b);
+				reverseButton.setEnabled(b);
+				trimButton.setEnabled(b);
+				autoDriveOne.setEnabled(b);
+				autoDrive.setEnabled(b);
+			}
+		});
 	}
 
 	protected void onAutoDrive() {
-		// TODO Auto-generated method stub
-
+		if (autoDriveThread == null) {
+			setControlsEnabled(false);
+			autoDriveThread = new AutoDriveThread(autoDriveController, this);
+			autoDriveThread.start();
+		}
 	}
 
 	protected void onAutoDriveOne() {
-		this.autoDriveController.driveOneStep(this);
+		bgExec.execute(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					autoDriveController.driveOneStep(GUIClient.this);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 
 	}
 
@@ -243,7 +297,8 @@ public class GUIClient implements PathListener {
 	protected void updateGui() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				renderer.render(state, map, mapImage, null);
+				renderer.render(state, map, mapImage, currentPath);
+				mapLabel.repaint();
 				frame.repaint();
 			}
 		});
@@ -292,25 +347,14 @@ public class GUIClient implements PathListener {
 
 	@Override
 	public void onNewPath(List<Point> path) {
-		bgExec.execute(new Runnable() {
-
-			@Override
-			public void run() {
-				currentPath = path;
-				updateGui();
-			}
-		});
+		currentPath = path;
+		updateGui();
 	}
 
 	@Override
 	public void stateChanged() {
-		bgExec.execute(new Runnable() {
 
-			@Override
-			public void run() {
-				updateGui();
-			}
-		});
+		updateGui();
 	}
 
 }

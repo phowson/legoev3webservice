@@ -53,6 +53,19 @@ public class MapImageRenderer {
 		}
 
 		Graphics graphics = image.getGraphics();
+		if (path != null) {
+			for (Point p : path) {
+				try {
+					image.setRGB(p.x, p.y, myCyan.getRGB());
+					image.setRGB(p.x - 1, p.y, myCyan.getRGB());
+					image.setRGB(p.x + 1, p.y, myCyan.getRGB());
+					
+					image.setRGB(p.x, p.y - 1, myCyan.getRGB());
+					image.setRGB(p.x, p.y + 1, myCyan.getRGB());
+				} catch (ArrayIndexOutOfBoundsException ex) {
+				}
+			}
+		}
 		double overallHeadingRad = state.heading_DEG * Math.PI / 180.0;
 		double vX = Math.cos(overallHeadingRad) * 30;
 		double vY = Math.sin(overallHeadingRad) * 30;
@@ -60,19 +73,6 @@ public class MapImageRenderer {
 		graphics.drawLine((int) state.x_CM, (int) state.y_CM, (int) (state.x_CM + vX), (int) (state.y_CM + vY));
 		graphics.fillOval((int) state.x_CM - 4, (int) state.y_CM - 4, 8, 8);
 
-		if (path != null) {
-			for (Point p : path) {
-				try {
-					image.setRGB(p.x, p.y, myCyan.getRGB());
-					image.setRGB(p.x - 1, p.y, myCyan.getRGB());
-					image.setRGB(p.x + 1, p.y, myCyan.getRGB());
-
-					image.setRGB(p.x, p.y - 1, myCyan.getRGB());
-					image.setRGB(p.x, p.y + 1, myCyan.getRGB());
-				} catch (ArrayIndexOutOfBoundsException ex) {
-				}
-			}
-		}
 
 		return image;
 	}
