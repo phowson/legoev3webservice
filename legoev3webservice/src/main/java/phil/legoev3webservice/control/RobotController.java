@@ -8,7 +8,7 @@ public interface RobotController {
 	
 	int reverse(int clicks);
 
-	ScanData fullScannerSweep(int scanSize, int scanStep) throws InterruptedException;
+	ScanData fullScannerSweep(int scanSize, int scanStep) ;
 
 	void blockingSensorArrayMove(int target);
 

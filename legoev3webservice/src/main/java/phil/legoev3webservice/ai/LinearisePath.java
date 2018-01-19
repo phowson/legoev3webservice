@@ -11,8 +11,16 @@ public class LinearisePath {
 	private final double eps = 1e-3;
 	private final RobotState state;
 	private final EnvironmentMap map;
-	private final double maxAllowableCost;
-	private final double maxDistInOneStep;
+	private double maxAllowableCost;
+	private double maxDistInOneStep;
+
+	public void setMaxAllowableCost(double maxAllowableCost) {
+		this.maxAllowableCost = maxAllowableCost;
+	}
+
+	public void setMaxDistInOneStep(double maxDistInOneStep) {
+		this.maxDistInOneStep = maxDistInOneStep;
+	}
 
 	public LinearisePath(RobotState state, EnvironmentMap map, double maxAllowableCost, double maxDistInOneStep) {
 		this.state = state;
@@ -42,7 +50,7 @@ public class LinearisePath {
 
 		double heading;
 		heading = Math.atan(dy / dx) * 180 / Math.PI;
-		if (dx<0) {
+		if (dx < 0) {
 			heading = heading + 180;
 		}
 		double dist = Math.min(maxDistInOneStep, Math.sqrt(dx * dx + dy * dy));

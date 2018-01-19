@@ -14,8 +14,8 @@ public class AStarAlgorithm {
 
 	private final RobotState state;
 	private final EnvironmentMap map;
-	private final int targetX;
-	private final int targetY;
+	private int targetX;
+	private int targetY;
 	private final static double root2 = Math.sqrt(2);
 
 	public AStarAlgorithm(RobotState state, EnvironmentMap map, int tx, int ty) {
@@ -23,6 +23,14 @@ public class AStarAlgorithm {
 		this.map = map;
 		this.targetX = tx;
 		this.targetY = ty;
+	}
+
+	public void setTargetX(int targetX) {
+		this.targetX = targetX;
+	}
+
+	public void setTargetY(int targetY) {
+		this.targetY = targetY;
 	}
 
 	public List<Point> getAStarPath() {
@@ -36,13 +44,12 @@ public class AStarAlgorithm {
 				finalPoint = sp;
 				break;
 			}
-			
+
 			if (this.map.getAStarDist(sp.x, sp.y) <= sp.pathLength) {
 				// Already know how to get here quicker
 				continue;
 			}
-			
-			
+
 			this.map.setAStarDist(sp.x, sp.y, sp.pathLength);
 			addSearchPoints(searchPoints, sp.x, sp.y, sp, sp.pathLength);
 

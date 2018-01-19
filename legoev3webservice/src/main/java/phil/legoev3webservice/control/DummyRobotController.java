@@ -23,7 +23,7 @@ public class DummyRobotController implements RobotController {
 		return clicks;
 	}
 
-	public ScanData fullScannerSweep(int scanSize, int scanStep) throws InterruptedException {
+	public ScanData fullScannerSweep(int scanSize, int scanStep) {
 		logger.info("Got command to do a full scanner sweep: " + scanSize + ", step " + scanStep);
 		return new ScanData(new int[scanSize], new int[scanSize], new int[scanSize], new int[scanSize]);
 	}

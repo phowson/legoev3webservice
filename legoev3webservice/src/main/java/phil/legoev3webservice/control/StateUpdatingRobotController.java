@@ -45,7 +45,7 @@ public class StateUpdatingRobotController implements RobotController {
 
 		state.advance(res.getDistance() * RobotCalibration.MOVE_CM_PER_CLICK);
 		double rotate = res.getRotation() * RobotCalibration.ROTATE_DEGREES_PER_CLICK;
-		logger.info("Rotated by : "+ rotate +" degrees");
+		logger.info("Rotated by : " + rotate + " degrees");
 		state.rotate(rotate);
 
 		if (res.pressed) {
@@ -61,7 +61,7 @@ public class StateUpdatingRobotController implements RobotController {
 		return c;
 	}
 
-	public synchronized ScanData fullScannerSweep(int scanSize, int scanStep) throws InterruptedException {
+	public synchronized ScanData fullScannerSweep(int scanSize, int scanStep) {
 		ScanData sweep = controller.fullScannerSweep(scanSize, scanStep);
 		logger.info("Sweep : " + sweep);
 		map.apply(state, filter.filter(sweep));

@@ -4,13 +4,13 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.HeadlessException;
-import java.awt.Image;
-import java.awt.Robot;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -23,6 +23,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
+import phil.legoev3webservice.ai.AStarAlgorithm;
+import phil.legoev3webservice.ai.AutoDriveController;
+import phil.legoev3webservice.ai.LinearisePath;
+import phil.legoev3webservice.ai.PathListener;
 import phil.legoev3webservice.client.RobotClient;
 import phil.legoev3webservice.control.RobotController;
 import phil.legoev3webservice.control.StateUpdatingRobotController;
@@ -31,7 +35,7 @@ import phil.legoev3webservice.map.MapImageRenderer;
 import phil.legoev3webservice.map.RobotState;
 import phil.legoev3webservice.robot.RobotCalibration;
 
-public class GUIClient {
+public class GUIClient implements PathListener {
 
 	private RobotController contoller;
 	private JFrame frame;
@@ -40,26 +44,35 @@ public class GUIClient {
 	private EnvironmentMap map;
 	private MapImageRenderer renderer = new MapImageRenderer();
 	private final Executor bgExec = Executors.newSingleThreadExecutor();
+	private AutoDriveController autoDriveController;
+	private volatile List<Point> currentPath;
 
-	public GUIClient(RobotClient robotClient, RobotState state, EnvironmentMap map) {
+	public GUIClient(RobotClient robotClient, RobotState state, EnvironmentMap map,
+			AutoDriveController autoDriveController) {
 		this.state = state;
 		this.map = map;
 		this.contoller = new StateUpdatingRobotController(robotClient, state, map);
+		this.autoDriveController = autoDriveController;
 	}
 
 	public static void main(String[] args) throws NumberFormatException, IOException {
 		String path = App.class.getClassLoader().getResource("jul-log.properties").getFile();
 		System.setProperty("java.util.logging.config.file", path);
+
+		RobotClient client = new RobotClient(new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 		RobotState state = new RobotState();
 		state.x_CM = 500;
 		state.y_CM = 500;
-		new GUIClient(new RobotClient(new InetSocketAddress(args[0], Integer.parseInt(args[1]))), state,
-				new EnvironmentMap(1000)).run();
+		EnvironmentMap map = new EnvironmentMap(1000);
+		LinearisePath linearisePath = new LinearisePath(state, map, 50, 30);
+		AutoDriveController adc = new AutoDriveController(new AStarAlgorithm(state, map, 999, 500), client, state,
+				linearisePath);
+		new GUIClient(client, state, map, adc).run();
 	}
 
 	private void run() {
 
-		mapImage = renderer.render(state, map, null, null);
+		mapImage = renderer.render(state, map, null, currentPath);
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		JPanel mapPanel = new JPanel();
@@ -196,7 +209,7 @@ public class GUIClient {
 	}
 
 	protected void onAutoDriveOne() {
-		// TODO Auto-generated method stub
+		this.autoDriveController.driveOneStep(this);
 
 	}
 
@@ -273,6 +286,29 @@ public class GUIClient {
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
+			}
+		});
+	}
+
+	@Override
+	public void onNewPath(List<Point> path) {
+		bgExec.execute(new Runnable() {
+
+			@Override
+			public void run() {
+				currentPath = path;
+				updateGui();
+			}
+		});
+	}
+
+	@Override
+	public void stateChanged() {
+		bgExec.execute(new Runnable() {
+
+			@Override
+			public void run() {
+				updateGui();
 			}
 		});
 	}

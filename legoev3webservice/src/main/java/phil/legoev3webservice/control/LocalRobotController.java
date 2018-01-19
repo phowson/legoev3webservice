@@ -158,7 +158,7 @@ public class LocalRobotController implements RobotController {
 	 * 
 	 * @see phil.legoev3webservice.IRobotController#fullScannerSweep(int, int)
 	 */
-	public ScanData fullScannerSweep(int scanSize, int scanStep) throws InterruptedException {
+	public ScanData fullScannerSweep(int scanSize, int scanStep) {
 		int halfScan = scanSize / 2;
 		sensorArrayMotor.reset();
 
@@ -179,8 +179,7 @@ public class LocalRobotController implements RobotController {
 
 	}
 
-	private void sensorSweep(int steps, int[] irData, int[] colorData, int startIdx, int incr, int sensorScanStep)
-			throws InterruptedException {
+	private void sensorSweep(int steps, int[] irData, int[] colorData, int startIdx, int incr, int sensorScanStep) {
 		irSensor.setMode("IR-PROX");
 		colorSensor.setMode(ColorSensor.SYSFS_REFLECTED_LIGHT_INTENSITY_MODE);
 		configureSensorMotor();
@@ -229,7 +228,7 @@ public class LocalRobotController implements RobotController {
 		} else {
 			logger.info("Inverse polarity");
 			sensorArrayMotor.setPolarity("inversed");
-			target=-target;
+			target = -target;
 		}
 		blockingSensorArrayMoveImpl(getSensorArrayPosition() + target);
 		logger.info("Move complete");
