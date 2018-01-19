@@ -145,9 +145,8 @@ public class LocalRobotController implements RobotController {
 		int finalPosL = getLeftMotorPosition();
 		int finalPosR = getRightMotorPosition();
 
-		int d = ((finalPosL - initalPosL) + (finalPosR - initalPosR)) / 2;
-		return new AdvanceResults(d, startProx, prox, colorSensor.getReflectedLightIntensity(),
-				touchSensor.isPressed());
+		return new AdvanceResults((finalPosL - initalPosL), (finalPosR - initalPosR), startProx, prox,
+				colorSensor.getReflectedLightIntensity(), touchSensor.isPressed());
 
 	}
 
@@ -201,8 +200,12 @@ public class LocalRobotController implements RobotController {
 	private void blockingSensorArrayMoveImpl(int target) {
 		sensorArrayMotor.setPosition_SP(target - getSensorArrayPosition());
 		sensorArrayMotor.runToRelPos();
+
 		while (getSensorArrayPosition() < target) {
 			Thread.yield();
+			if (!sensorArrayMotor.getStateViaString().contains("running")) {
+				break;
+			}
 		}
 	}
 

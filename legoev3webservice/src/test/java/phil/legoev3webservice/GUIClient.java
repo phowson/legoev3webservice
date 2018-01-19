@@ -47,6 +47,8 @@ public class GUIClient {
 	}
 
 	public static void main(String[] args) throws NumberFormatException, IOException {
+		String path = App.class.getClassLoader().getResource("jul-log.properties").getFile();
+		System.setProperty("java.util.logging.config.file", path);
 		RobotState state = new RobotState();
 		state.x_CM = 500;
 		state.y_CM = 500;

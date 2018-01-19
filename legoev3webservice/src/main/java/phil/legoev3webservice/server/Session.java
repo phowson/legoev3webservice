@@ -202,7 +202,8 @@ public class Session {
 		int iclicks = inboundBuffer.getInt();
 		AdvanceResults res = controller.advanceWithoutCollision(iclicks);
 		outboundBuffer.position(0);
-		outboundBuffer.putInt(res.clicksAdvanced);
+		outboundBuffer.putInt(res.clicksAdvancedLeft);
+		outboundBuffer.putInt(res.clicksAdvancedRight);
 		outboundBuffer.putInt(res.startProximity);
 		outboundBuffer.putInt(res.endProximity);
 		outboundBuffer.putInt(res.reflectedLightIntensity);

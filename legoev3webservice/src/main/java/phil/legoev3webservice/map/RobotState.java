@@ -17,6 +17,10 @@ public class RobotState {
 
 	public void rotate(double degrees) {
 		heading_DEG += degrees;
+		heading_DEG = heading_DEG % 360;
+		if (heading_DEG<0) {
+			heading_DEG+=360;
+		}
 	}
 
 }

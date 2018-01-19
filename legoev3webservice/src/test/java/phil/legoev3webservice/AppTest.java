@@ -83,7 +83,8 @@ public class AppTest extends TestCase {
 	public void testClientAdvance() throws Exception {
 		try (RobotClient client = new RobotClient(new InetSocketAddress("localhost", 5050));) {
 			AdvanceResults res = client.advanceWithoutCollision(10);
-			assertEquals(10, res.clicksAdvanced);
+			assertEquals(10, res.clicksAdvancedLeft);
+			assertEquals(10, res.clicksAdvancedRight);
 			assertEquals(false, res.pressed);
 
 		}

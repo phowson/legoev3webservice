@@ -15,7 +15,7 @@ public class DummyRobotController implements RobotController {
 
 	public AdvanceResults advanceWithoutCollision(int clicks) {
 		logger.info("Got command to advance : " + clicks);
-		return new AdvanceResults(clicks, 0, 0, 0, false);
+		return new AdvanceResults(clicks,clicks,  0, 0, 0, false);
 	}
 
 	public int reverse(int clicks) {

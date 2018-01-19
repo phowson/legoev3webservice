@@ -48,7 +48,8 @@ public class App {
 		System.out.println("Total distance travelled : " + dist);
 
 		AdvanceResults result = robot.advanceWithoutCollision(1000);
-		System.out.println("Total distance travelled in clicks : " + result.clicksAdvanced);
+		System.out.println("Total distance travelled in clicks left : " + result.clicksAdvancedLeft);
+		System.out.println("Total distance travelled in clicks right : " + result.clicksAdvancedRight);
 		int d = result.startProximity - result.endProximity;
 		System.out.println("Total distance travelled according to IR sensor : " + 70.0 * (d / 100.0) + "cm");
 	}

@@ -11,7 +11,7 @@ public class ScanDataFilter {
 		double[] d2 = new double[4];
 
 		FilteredSensorData out = new FilteredSensorData(new double[data.irData.length], new double[data.irData.length]);
-		double heading = -90;
+		double heading = 90;
 		for (int i = 0; i < data.irData.length; ++i) {
 			double dst;
 			if (i == 0) {
@@ -52,7 +52,7 @@ public class ScanDataFilter {
 			out.headings[i] = heading;
 			out.distance_CM[i] = dst;
 
-			heading += RobotCalibration.SCAN_DEGREES_PER_VALUE;
+			heading -= RobotCalibration.SCAN_DEGREES_PER_VALUE;
 		}
 
 		return out;

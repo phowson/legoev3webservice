@@ -1,10 +1,14 @@
 package phil.legoev3webservice.control;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import phil.legoev3webservice.map.EnvironmentMap;
 import phil.legoev3webservice.map.RobotState;
 import phil.legoev3webservice.robot.RobotCalibration;
 
 public class StateUpdatingRobotController implements RobotController {
+	private static final Logger logger = LoggerFactory.getLogger(StateUpdatingRobotController.class);
 	private final RobotController controller;
 	private final RobotState state;
 	private final ScanDataFilter filter = new ScanDataFilter();
@@ -39,7 +43,8 @@ public class StateUpdatingRobotController implements RobotController {
 	public synchronized AdvanceResults advanceWithoutCollision(int clicks) {
 		AdvanceResults res = controller.advanceWithoutCollision(clicks);
 
-		state.advance(res.clicksAdvanced * RobotCalibration.MOVE_CM_PER_CLICK);
+		state.advance(res.getDistance() * RobotCalibration.MOVE_CM_PER_CLICK);
+		state.rotate(res.getRotation() * RobotCalibration.ROTATE_DEGREES_PER_CLICK);
 
 		if (res.pressed) {
 			map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
@@ -56,6 +61,7 @@ public class StateUpdatingRobotController implements RobotController {
 
 	public synchronized ScanData fullScannerSweep(int scanSize, int scanStep) throws InterruptedException {
 		ScanData sweep = controller.fullScannerSweep(scanSize, scanStep);
+		logger.info("Sweep : " + sweep);
 		map.apply(state, filter.filter(sweep));
 		return sweep;
 	}
