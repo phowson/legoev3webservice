@@ -28,8 +28,7 @@ public class AStarAlgorithm {
 	public List<Point> getAStarPath() {
 		this.map.resetAStarData();
 		PriorityQueue<SearchPoint> searchPoints = new PriorityQueue<>();
-		this.map.setAStarDist((int) Math.round(state.x_CM), (int) Math.round(state.y_CM), 0);
-		addSearchPoints(searchPoints, state.x_CM, state.y_CM, null, 0);
+		searchPoints.add(new SearchPoint((int) Math.round(state.x_CM), (int) Math.round(state.y_CM), 0, null, 0));
 		SearchPoint finalPoint = null;
 		while (!searchPoints.isEmpty()) {
 			SearchPoint sp = searchPoints.remove();
