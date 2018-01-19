@@ -132,7 +132,7 @@ public class EnvironmentMap implements Serializable {
 				double zz = Math.sqrt(xdst * xdst + ydst * ydst);
 				if (zz < radius) {
 					int v = getAt(dx, dy);
-					if (v != OBSTRUCTION && v != HARD_OBSTRUCTION && v != DANGER) {
+					if (v != OBSTRUCTION && v != HARD_OBSTRUCTION) {
 						setAt(dx, dy, vz);
 					}
 				}

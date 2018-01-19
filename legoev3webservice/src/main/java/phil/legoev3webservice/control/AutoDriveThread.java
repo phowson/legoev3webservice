@@ -24,7 +24,7 @@ public class AutoDriveThread extends Thread {
 	public void run() {
 		try {
 			controller.initialise();
-
+			listener.stateChanged();
 			while (!stop) {
 				if (controller.driveOneStep(listener).isEmpty()) {
 					return;

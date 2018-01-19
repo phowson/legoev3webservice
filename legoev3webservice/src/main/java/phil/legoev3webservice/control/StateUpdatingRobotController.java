@@ -35,11 +35,13 @@ public class StateUpdatingRobotController implements RobotController {
 	public synchronized int rotate(int iclicks) {
 		int r = controller.rotate(iclicks);
 		int sn = 1;
-		if (iclicks<0) {
+		if (iclicks < 0) {
 			sn = -1;
 		}
 		state.rotate(r * RobotCalibration.ROTATE_DEGREES_PER_CLICK * sn);
-
+		if (r < iclicks - 10) {
+			map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+		}
 		return r;
 	}
 
