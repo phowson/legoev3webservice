@@ -10,7 +10,7 @@ public class RobotCalibration {
 
 	public static final double SCAN_DEGREES_PER_VALUE = 180.0 / SCAN_ITERS;
 
-	public static final int ROTATE_CLICKS_PER_90DEGREES = 530;
+	public static final int ROTATE_CLICKS_PER_90DEGREES = 525;
 	public static final double ROTATE_CLICKS_PER_DEGREE = ROTATE_CLICKS_PER_90DEGREES / 90.0;
 	public static final double ROTATE_DEGREES_PER_CLICK = 1.0 / ROTATE_CLICKS_PER_DEGREE;
 

@@ -83,7 +83,7 @@ public class AStarAlgorithm {
 
 	}
 
-	private boolean alreadyInTargetArea() {
+	public boolean alreadyInTargetArea() {
 
 		double dx = targetX - state.x_CM;
 		double dy = targetY - state.y_CM;

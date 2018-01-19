@@ -27,10 +27,12 @@ import phil.legoev3webservice.ai.AStarAlgorithm;
 import phil.legoev3webservice.ai.AutoDriveController;
 import phil.legoev3webservice.ai.LinearisePath;
 import phil.legoev3webservice.ai.PathListener;
+import phil.legoev3webservice.ai.SweepAreaController;
 import phil.legoev3webservice.client.RobotClient;
 import phil.legoev3webservice.control.AutoDriveThread;
 import phil.legoev3webservice.control.RobotController;
 import phil.legoev3webservice.control.StateUpdatingRobotController;
+import phil.legoev3webservice.control.SweepAreaThread;
 import phil.legoev3webservice.map.EnvironmentMap;
 import phil.legoev3webservice.map.MapImageRenderer;
 import phil.legoev3webservice.map.RobotState;
@@ -49,6 +51,7 @@ public class GUIClient implements PathListener {
 	private volatile List<Point> currentPath;
 	private JLabel mapLabel;
 	private volatile AutoDriveThread autoDriveThread;
+	private volatile SweepAreaThread sweepAreaThread;
 	private JButton scanButton;
 	private JButton advanceButton;
 	private JButton rotateButton;
@@ -58,6 +61,7 @@ public class GUIClient implements PathListener {
 	private JButton autoDrive;
 	private int targetX;
 	private int targetY;
+	private JButton autoSweep;
 
 	public GUIClient(RobotController controller, RobotState state, EnvironmentMap map,
 			AutoDriveController autoDriveController) {
@@ -78,7 +82,8 @@ public class GUIClient implements PathListener {
 		state.x_CM = 500;
 		state.y_CM = 500;
 		EnvironmentMap map = new EnvironmentMap(1000);
-		LinearisePath linearisePath = new LinearisePath(state, map, RobotCalibration.DEFAULT_LINEAR_TOLERANCE, RobotCalibration.SENSOR_INFINITY_POINT_CM);
+		LinearisePath linearisePath = new LinearisePath(state, map, RobotCalibration.DEFAULT_LINEAR_TOLERANCE,
+				RobotCalibration.SENSOR_INFINITY_POINT_CM);
 
 		StateUpdatingRobotController controller = new StateUpdatingRobotController(client, state, map);
 		AutoDriveController adc = new AutoDriveController(new AStarAlgorithm(state, map, 999, 500), controller, state,
@@ -173,6 +178,17 @@ public class GUIClient implements PathListener {
 
 		southPanel.add(autoDrive);
 
+		autoSweep = new JButton("Auto sweep");
+		autoSweep.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onAutoSweep();
+			}
+		});
+
+		southPanel.add(autoSweep);
+
 		JButton stopAutoDrive = new JButton("Stop");
 		stopAutoDrive.addActionListener(new ActionListener() {
 
@@ -215,17 +231,29 @@ public class GUIClient implements PathListener {
 	}
 
 	protected void onStop() {
-		autoDriveThread.requestStop();
+		if (autoDriveThread != null) {
+			autoDriveThread.requestStop();
+		}
+		if (sweepAreaThread != null) {
+			sweepAreaThread.requestStop();
+		}
+
 		bgExec.execute(new Runnable() {
 
 			@Override
 			public void run() {
 				try {
-					autoDriveThread.join();
+					if (autoDriveThread != null) {
+						autoDriveThread.join();
+					}
+					if (sweepAreaThread != null) {
+						sweepAreaThread.join();
+					}
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 				autoDriveThread = null;
+				sweepAreaThread = null;
 
 				setControlsEnabled(true);
 			}
@@ -237,6 +265,7 @@ public class GUIClient implements PathListener {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 
+				autoSweep.setEnabled(false);
 				scanButton.setEnabled(b);
 				advanceButton.setEnabled(b);
 				rotateButton.setEnabled(b);
@@ -253,6 +282,15 @@ public class GUIClient implements PathListener {
 			setControlsEnabled(false);
 			autoDriveThread = new AutoDriveThread(autoDriveController, this);
 			autoDriveThread.start();
+		}
+	}
+
+	protected void onAutoSweep() {
+		if (sweepAreaThread == null) {
+			setControlsEnabled(false);
+			SweepAreaController sweepAreaController = new SweepAreaController(autoDriveController, map, state);
+			sweepAreaThread = new SweepAreaThread(sweepAreaController, this);
+			sweepAreaThread.start();
 		}
 	}
 

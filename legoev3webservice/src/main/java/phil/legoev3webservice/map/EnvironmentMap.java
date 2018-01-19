@@ -1,5 +1,6 @@
 package phil.legoev3webservice.map;
 
+import java.awt.Point;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -32,6 +33,31 @@ public class EnvironmentMap implements Serializable {
 
 	public EnvironmentMap(int mapWidth) {
 		this.mapWidth = mapWidth;
+	}
+
+	public Point findClosestUnvisited(int x, int y, int minDist) {
+		int sx = -1;
+		int sy = -1;
+		double bestSoFar = Double.POSITIVE_INFINITY;
+		for (int k : mapData.keys()) {
+			if (visitedData.get(k)==0) {
+			int kx = k % mapWidth;
+			int ky = k / mapWidth;
+			int dx = x - kx;
+			int dy = y - ky;
+			double dist = Math.sqrt(dx * dx + dy * dy);
+			if (dist > minDist && dist < bestSoFar) {
+				sx = kx;
+				sy = ky;
+				bestSoFar = dist;
+			}
+			}
+
+		}
+		if (sx != -1)
+			return new Point(sx, sy);
+		return null;
+
 	}
 
 	public void resetAStarData() {
