@@ -87,7 +87,9 @@ public class LinearisePath {
 		double y = state.y_CM;
 		for (int z = 0; z < l; ++z) {
 			int v = map.getAt((int) x, (int) y);
-			if (v == EnvironmentMap.OBSTRUCTION || v == EnvironmentMap.HARD_OBSTRUCTION || v==EnvironmentMap.DANGER) {
+			if (v == EnvironmentMap.OBSTRUCTION || v == EnvironmentMap.HARD_OBSTRUCTION 
+					//|| v==EnvironmentMap.DANGER
+					) {
 				return false;
 			}
 			x += dx1;
