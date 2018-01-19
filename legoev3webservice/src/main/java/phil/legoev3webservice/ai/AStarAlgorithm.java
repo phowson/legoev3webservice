@@ -30,10 +30,11 @@ public class AStarAlgorithm {
 		this.targetX = tx;
 		this.targetY = ty;
 	}
-	
+
 	public int getTargetX() {
 		return targetX;
 	}
+
 	public int getTargetY() {
 		return targetY;
 	}
@@ -62,7 +63,7 @@ public class AStarAlgorithm {
 				break;
 			}
 
-			if (this.map.getAStarDist(sp.x, sp.y) <= sp.pathLength) {
+			if (this.map.getAStarDist(sp.x, sp.y) - 0.5 <= sp.pathLength) {
 				// Already know how to get here quicker
 				continue;
 			}
@@ -110,6 +111,11 @@ public class AStarAlgorithm {
 	}
 
 	private void tryAdd(PriorityQueue<SearchPoint> searchPoints, int x, int y, SearchPoint pred, double pathLen) {
+
+		if (x < 0 || y < 0 || x >= map.mapWidth || y >= map.mapWidth) {
+			return;
+		}
+
 		int c = map.getAt(x, y);
 
 		// A* part. Our euristic is the straight line distance to the target.
@@ -118,7 +124,9 @@ public class AStarAlgorithm {
 
 		double d = Math.sqrt(dx * dx + dy * dy) + pathLen;
 
-		if (c != EnvironmentMap.OBSTRUCTION && c != EnvironmentMap.HARD_OBSTRUCTION) {
+		if (c == EnvironmentMap.OBSTRUCTION || c == EnvironmentMap.HARD_OBSTRUCTION) {
+			d += RobotCalibration.AI_OBSTRUCTION_PENALTY;
+		}
 			if (c == EnvironmentMap.DANGER) {
 				d += RobotCalibration.AI_DANGER_PENALTY;
 			}
@@ -126,7 +134,7 @@ public class AStarAlgorithm {
 			if (existingDist > pathLen) {
 				searchPoints.add(new SearchPoint(x, y, d, pred, pathLen));
 			}
-		}
+		
 
 	}
 

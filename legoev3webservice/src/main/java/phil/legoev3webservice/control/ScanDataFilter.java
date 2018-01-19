@@ -60,14 +60,18 @@ public class ScanDataFilter {
 
 	}
 
-	private double interpolate(double pc) {
+	public static void main(String[] args) {
+		System.out.println(interpolate(1));
+	}
+	
+	public static double interpolate(double pc) {
 		for (int i = 1; i < RobotCalibration.SENSOR_CALIBRATION_CM.length; ++i) {
 			if (RobotCalibration.SENSOR_CALIBRATION_PC[i] >= pc) {
 				double prev = RobotCalibration.SENSOR_CALIBRATION_PC[i - 1];
 				double z = pc - prev;
 				double d = RobotCalibration.SENSOR_CALIBRATION_PC[i] - prev;
 				double dC = RobotCalibration.SENSOR_CALIBRATION_CM[i] - RobotCalibration.SENSOR_CALIBRATION_CM[i - 1];
-				return dC * (z / d) + RobotCalibration.SENSOR_CALIBRATION_CM[i];
+				return dC * (z / d) + RobotCalibration.SENSOR_CALIBRATION_CM[i-1];
 			}
 
 		}

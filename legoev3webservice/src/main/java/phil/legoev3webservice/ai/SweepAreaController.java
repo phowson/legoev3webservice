@@ -65,6 +65,8 @@ public class SweepAreaController {
 
 		List<Point> path = this.autoDriveController.driveOneStep(listener);
 		if (path.isEmpty()) {
+			environmentMap.fillVisited(this.autoDriveController.getaStarAlgorithm().getTargetX(), this.autoDriveController.getaStarAlgorithm().getTargetY(), RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+			
 			if (!findNextUnvisitedPoint()) {
 				return false;
 			}

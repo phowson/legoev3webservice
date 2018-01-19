@@ -19,9 +19,9 @@ public class RobotCalibration {
 	public static final double MOVE_CLICKS_PER_CM = 2002 / 56.1;
 	public static final double MOVE_CM_PER_CLICK = 1.0 / MOVE_CLICKS_PER_CM;
 
-	public static final double[] SENSOR_CALIBRATION_PC = new double[] { 0, 4, 13, 26, 40, 54, 66, 72, 80, 100};
+	public static final double[] SENSOR_CALIBRATION_PC = new double[] { 0, 4, 13, 26, 40, 54, 66, 72, 80, 100 };
 
-	public static final double[] SENSOR_CALIBRATION_CM = new double[] { 0, 7, 12.5, 24.5, 36, 51, 68, 83, 102, 220};
+	public static final double[] SENSOR_CALIBRATION_CM = new double[] { 0, 7, 12.5, 24.5, 36, 51, 68, 83, 102, 220 };
 
 	public static final double SENSOR_CM_PER_UNIT1 = 30.0 / 34.5;
 	public static final double SENSOR_CM_PER_UNIT2 = 45 / 50.5;
@@ -38,5 +38,6 @@ public class RobotCalibration {
 
 	public static final double SENSOR_OFFSET_X = 6;
 	public static final double SENSOR_OFFSET_Y = -2;
+	public static final double AI_OBSTRUCTION_PENALTY = 10000;
 
 }
