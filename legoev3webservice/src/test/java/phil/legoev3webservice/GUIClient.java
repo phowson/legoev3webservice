@@ -56,6 +56,8 @@ public class GUIClient implements PathListener {
 	private JButton trimButton;
 	private JButton autoDriveOne;
 	private JButton autoDrive;
+	private int targetX;
+	private int targetY;
 
 	public GUIClient(RobotController controller, RobotState state, EnvironmentMap map,
 			AutoDriveController autoDriveController) {
@@ -63,6 +65,8 @@ public class GUIClient implements PathListener {
 		this.map = map;
 		this.contoller = controller;
 		this.autoDriveController = autoDriveController;
+		targetX = autoDriveController.getaStarAlgorithm().getTargetX();
+		targetY = autoDriveController.getaStarAlgorithm().getTargetY();
 	}
 
 	public static void main(String[] args) throws NumberFormatException, IOException {
@@ -84,7 +88,7 @@ public class GUIClient implements PathListener {
 
 	private void run() {
 
-		mapImage = renderer.render(state, map, null, currentPath);
+		mapImage = renderer.render(state, map, null, currentPath, targetX, targetY);
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		JPanel mapPanel = new JPanel();
@@ -297,7 +301,7 @@ public class GUIClient implements PathListener {
 	protected void updateGui() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				renderer.render(state, map, mapImage, currentPath);
+				renderer.render(state, map, mapImage, currentPath, targetX, targetY);
 				mapLabel.repaint();
 				frame.repaint();
 			}
@@ -346,8 +350,10 @@ public class GUIClient implements PathListener {
 	}
 
 	@Override
-	public void onNewPath(List<Point> path) {
+	public void onNewPath(List<Point> path, int targetX, int targetY) {
 		currentPath = path;
+		this.targetX = targetX;
+		this.targetY = targetY;
 		updateGui();
 	}
 

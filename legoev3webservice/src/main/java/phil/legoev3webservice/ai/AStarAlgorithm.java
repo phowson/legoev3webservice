@@ -30,6 +30,13 @@ public class AStarAlgorithm {
 		this.targetX = tx;
 		this.targetY = ty;
 	}
+	
+	public int getTargetX() {
+		return targetX;
+	}
+	public int getTargetY() {
+		return targetY;
+	}
 
 	public void setTargetX(int targetX) {
 		this.targetX = targetX;

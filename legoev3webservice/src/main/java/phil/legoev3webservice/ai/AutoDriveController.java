@@ -40,7 +40,12 @@ public class AutoDriveController {
 	public List<Point> driveOneStep(PathListener listener) {
 		robotController.fullScannerSweep(RobotCalibration.SCAN_ITERS, RobotCalibration.SCAN_CLICKS_PER_ITER);
 		List<Point> path = aStarAlgorithm.getAStarPath();
-		listener.onNewPath(path);
+		if (path.isEmpty()) {
+			//reached goal.
+			return path;
+		}
+		
+		listener.onNewPath(path, aStarAlgorithm.getTargetX(), aStarAlgorithm.getTargetY());
 		RobotMoveCommand lc = linearisePath.getNextLinearCommand(path);
 		double d = (lc.heading - robotState.heading_DEG);
 		if (d>180) {

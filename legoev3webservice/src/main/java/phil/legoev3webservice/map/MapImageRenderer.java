@@ -17,7 +17,8 @@ public class MapImageRenderer {
 	private static final Color myGreen = new Color(0, 255, 0);
 	private static final Color myCyan = new Color(0, 102, 102);
 
-	public BufferedImage render(RobotState state, EnvironmentMap map, BufferedImage image, List<Point> path) {
+	public BufferedImage render(RobotState state, EnvironmentMap map, BufferedImage image, List<Point> path,
+			int targetX, int targetY) {
 		if (image == null) {
 			image = new BufferedImage(map.mapWidth, map.mapWidth, BufferedImage.TYPE_INT_RGB);
 		}
@@ -59,7 +60,7 @@ public class MapImageRenderer {
 					image.setRGB(p.x, p.y, myCyan.getRGB());
 					image.setRGB(p.x - 1, p.y, myCyan.getRGB());
 					image.setRGB(p.x + 1, p.y, myCyan.getRGB());
-					
+
 					image.setRGB(p.x, p.y - 1, myCyan.getRGB());
 					image.setRGB(p.x, p.y + 1, myCyan.getRGB());
 				} catch (ArrayIndexOutOfBoundsException ex) {
@@ -73,6 +74,11 @@ public class MapImageRenderer {
 		graphics.drawLine((int) state.x_CM, (int) state.y_CM, (int) (state.x_CM + vX), (int) (state.y_CM + vY));
 		graphics.fillOval((int) state.x_CM - 4, (int) state.y_CM - 4, 8, 8);
 
+		if (targetX > 0) {
+			graphics.setColor(myBlack);
+			graphics.drawOval(targetX - 10, targetY - 10, 20, 20);
+			graphics.drawString("Target", targetX -50, targetY);
+		}
 
 		return image;
 	}

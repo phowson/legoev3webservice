@@ -26,15 +26,14 @@ public class TestAStar {
 		EnvironmentMap map = EnvironmentMap.load("testmap1");
 		AStarAlgorithm alg = new AStarAlgorithm(state, map, 500, 510);
 
-
 		for (int i = 0; i < 10; ++i) {
 			List<Point> path = alg.getAStarPath();
 			LinearisePath lp = new LinearisePath(state, map, 20, 30);
 			RobotMoveCommand lc = lp.getNextLinearCommand(path);
-			state.rotate(lc.heading - state.heading_DEG );
+			state.rotate(lc.heading - state.heading_DEG);
 
 			MapImageRenderer renderer = new MapImageRenderer();
-			BufferedImage image = renderer.render(state, map, null, path);
+			BufferedImage image = renderer.render(state, map, null, path, alg.getTargetX(), alg.getTargetY());
 			File outputfile = new File("saved" + i + ".png");
 			ImageIO.write(image, "png", outputfile);
 			state.advance(lc.distance);

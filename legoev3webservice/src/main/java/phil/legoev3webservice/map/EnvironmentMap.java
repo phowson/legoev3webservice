@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import gnu.trove.map.hash.TIntByteHashMap;
 import gnu.trove.map.hash.TIntDoubleHashMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 import phil.legoev3webservice.control.FilteredSensorData;
@@ -26,6 +27,7 @@ public class EnvironmentMap implements Serializable {
 
 	public final int mapWidth;
 	private TIntIntHashMap mapData = new TIntIntHashMap();
+	private TIntByteHashMap visitedData = new TIntByteHashMap();
 	private TIntDoubleHashMap aStarData = new TIntDoubleHashMap();
 
 	public EnvironmentMap(int mapWidth) {
@@ -34,6 +36,14 @@ public class EnvironmentMap implements Serializable {
 
 	public void resetAStarData() {
 		aStarData.clear();
+	}
+
+	public void setVisited(int x_CM, int y_CM) {
+		visitedData.put(genKey(x_CM, y_CM), (byte) 1);
+	}
+
+	public boolean isVisited(int x_CM, int y_CM) {
+		return visitedData.get(genKey(x_CM, y_CM)) == 1;
 	}
 
 	public double getAStarDist(int x_CM, int y_CM) {
