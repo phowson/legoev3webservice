@@ -47,7 +47,7 @@ public class LocalRobotController implements RobotController {
 		leftMotor.runToRelPos();
 		rightMotor.runToRelPos();
 
-		while (getLeftMotorPosition() < leftTarget || getRightMotorPosition() < rightTarget) {
+		while (motorsRunning()) {
 			if (touchSensor.isPressed()) {
 				leftMotor.stop();
 				rightMotor.stop();
@@ -84,14 +84,23 @@ public class LocalRobotController implements RobotController {
 		rightMotor.setPosition_SP(clicks);
 		leftMotor.runToRelPos();
 		rightMotor.runToRelPos();
-		while (getLeftMotorPosition() < leftTarget || getRightMotorPosition() < rightTarget) {
-			Thread.yield();
-		}
+
+		waitMotorTermination();
 		int finalPosL = getLeftMotorPosition();
 		int finalPosR = getRightMotorPosition();
 
 		int d = ((finalPosL - initalPosL) + (finalPosR - initalPosR)) / 2;
 		return d;
+	}
+
+	private void waitMotorTermination() {
+		while (motorsRunning()) {
+			Thread.yield();
+		}
+	}
+
+	private boolean motorsRunning() {
+		return leftMotor.getStateViaString().contains("running") || rightMotor.getStateViaString().contains("running");
 	}
 
 	private int getRightMotorPosition() {
@@ -124,7 +133,7 @@ public class LocalRobotController implements RobotController {
 		if (prox > 0 && intensity < 10 && !touchSensor.isPressed()) {
 			leftMotor.runToRelPos();
 			rightMotor.runToRelPos();
-			while (getLeftMotorPosition() < leftTarget || getRightMotorPosition() < rightTarget) {
+			while (motorsRunning()) {
 
 				// Querying the sensor takes a bit of time, so act as soon as we
 				// have a value
@@ -161,7 +170,7 @@ public class LocalRobotController implements RobotController {
 	 */
 	public ScanData fullScannerSweep(int scanSize, int scanStep) {
 		int halfScan = scanSize / 2;
-		
+
 		configureSensorMotor();
 		int[] irData = new int[scanSize];
 		int[] irData2 = new int[scanSize];
@@ -183,7 +192,6 @@ public class LocalRobotController implements RobotController {
 	private void sensorSweep(int steps, int[] irData, int[] colorData, int startIdx, int incr, int sensorScanStep) {
 		irSensor.setMode("IR-PROX");
 		colorSensor.setMode(ColorSensor.SYSFS_REFLECTED_LIGHT_INTENSITY_MODE);
-
 
 		int idx = startIdx;
 

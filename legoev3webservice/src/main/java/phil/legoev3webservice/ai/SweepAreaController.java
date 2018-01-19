@@ -1,6 +1,7 @@
 package phil.legoev3webservice.ai;
 
 import java.awt.Point;
+import java.util.Collections;
 import java.util.List;
 
 import phil.legoev3webservice.map.EnvironmentMap;
@@ -22,17 +23,15 @@ public class SweepAreaController {
 	public void initialise() {
 
 		this.autoDriveController.initialise();
-		environmentMap.fillVisited((int) state.x_CM, (int) state.y_CM,
-				(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+		environmentMap.fillVisited((int) state.x_CM, (int) state.y_CM, (int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		findNextUnvisitedPoint();
 
 	}
 
 	private boolean findNextUnvisitedPoint() {
-		environmentMap.fillVisited((int) state.x_CM, (int) state.y_CM,
-				(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+		environmentMap.fillVisited((int) state.x_CM, (int) state.y_CM, (int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		Point point = environmentMap.findClosestUnvisited((int) state.x_CM, (int) state.y_CM,
-				(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+				(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM, true);
 
 		if (point == null) {
 			return false;
@@ -50,14 +49,28 @@ public class SweepAreaController {
 				return false;
 			}
 		}
-		
+		int x_CM = this.autoDriveController.getaStarAlgorithm().getTargetX();
+		int y_CM = this.autoDriveController.getaStarAlgorithm().getTargetY();
+		int v = environmentMap.getAt(x_CM, y_CM);
+
+		if (v != EnvironmentMap.KNOWN_CLEAR && v != EnvironmentMap.UNKNOWN && v!=EnvironmentMap.DANGER) {
+			// No longer unoccupied?
+			if (!findNextUnvisitedPoint()) {
+				return false;
+			}
+			listener.onNewPath(Collections.emptyList(), this.autoDriveController.getaStarAlgorithm().getTargetX(),
+					this.autoDriveController.getaStarAlgorithm().getTargetY());
+
+		}
+
 		List<Point> path = this.autoDriveController.driveOneStep(listener);
 		if (path.isEmpty()) {
 			if (!findNextUnvisitedPoint()) {
 				return false;
 			}
 		}
-		listener.onNewPath(path, this.autoDriveController.getaStarAlgorithm().getTargetX(), this.autoDriveController.getaStarAlgorithm().getTargetY());
+		listener.onNewPath(path, this.autoDriveController.getaStarAlgorithm().getTargetX(),
+				this.autoDriveController.getaStarAlgorithm().getTargetY());
 
 		return true;
 	}

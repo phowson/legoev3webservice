@@ -1,5 +1,6 @@
 package phil.legoev3webservice.control;
 
+import java.awt.Robot;
 import java.util.Arrays;
 
 import phil.legoev3webservice.robot.RobotCalibration;
@@ -22,7 +23,7 @@ public class ScanDataFilter {
 
 				Arrays.sort(d2);
 
-				dst = 0.5 * (d2[1] + d2[2]) * RobotCalibration.SENSOR_CM_PER_UNIT;
+				dst = interpolate(0.5 * (d2[1] + d2[2]));
 
 			} else if (i == data.irData.length - 1) {
 				d2[0] = data.irData[i];
@@ -31,7 +32,7 @@ public class ScanDataFilter {
 				d2[3] = data.irData2[i - 1];
 				Arrays.sort(d2);
 				out.headings[i] = heading;
-				dst = 0.5 * (d2[1] + d2[2]) * RobotCalibration.SENSOR_CM_PER_UNIT;
+				dst = interpolate(0.5 * (d2[1] + d2[2]));
 			} else {
 				d[0] = data.irData[i];
 				d[1] = data.irData2[i];
@@ -43,7 +44,7 @@ public class ScanDataFilter {
 				Arrays.sort(d);
 
 				out.headings[i] = heading;
-				dst = 0.25 * (d[1] + d[2] + d[3] + d[4]) * RobotCalibration.SENSOR_CM_PER_UNIT;
+				dst = interpolate(0.25 * (d[1] + d[2] + d[3] + d[4])) ;
 			}
 
 			if (dst >= RobotCalibration.SENSOR_INFINITY_POINT_CM) {
@@ -57,6 +58,20 @@ public class ScanDataFilter {
 
 		return out;
 
+	}
+
+	private double interpolate(double pc) {
+		for (int i = 1; i < RobotCalibration.SENSOR_CALIBRATION_CM.length; ++i) {
+			if (RobotCalibration.SENSOR_CALIBRATION_PC[i] >= pc) {
+				double prev = RobotCalibration.SENSOR_CALIBRATION_PC[i - 1];
+				double z = pc - prev;
+				double d = RobotCalibration.SENSOR_CALIBRATION_PC[i] - prev;
+				double dC = RobotCalibration.SENSOR_CALIBRATION_CM[i] - RobotCalibration.SENSOR_CALIBRATION_CM[i - 1];
+				return dC * (z / d) + RobotCalibration.SENSOR_CALIBRATION_CM[i];
+			}
+
+		}
+		return Double.POSITIVE_INFINITY;
 	}
 
 }
