@@ -5,8 +5,11 @@ import org.ev3dev.hardware.ports.LegoPort;
 import org.ev3dev.hardware.sensors.ColorSensor;
 import org.ev3dev.hardware.sensors.InfraredSensor;
 import org.ev3dev.hardware.sensors.TouchSensor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LocalRobotController implements RobotController {
+	private static final Logger logger = LoggerFactory.getLogger(LocalRobotController.class);
 	private static final int MAIN_MOTOR_SPEED = 100;
 	private static final String POSITION = "position";
 	private InfraredSensor irSensor = new InfraredSensor(new LegoPort(LegoPort.INPUT_1));
@@ -180,8 +183,7 @@ public class LocalRobotController implements RobotController {
 			throws InterruptedException {
 		irSensor.setMode("IR-PROX");
 		colorSensor.setMode(ColorSensor.SYSFS_REFLECTED_LIGHT_INTENSITY_MODE);
-		sensorArrayMotor.setStopAction("brake");
-		sensorArrayMotor.setSpeed_SP(200);
+		configureSensorMotor();
 
 		int idx = startIdx;
 
@@ -195,6 +197,11 @@ public class LocalRobotController implements RobotController {
 			blockingSensorArrayMoveImpl(target);
 			idx += incr;
 		}
+	}
+
+	private void configureSensorMotor() {
+		sensorArrayMotor.setStopAction("brake");
+		sensorArrayMotor.setSpeed_SP(200);
 	}
 
 	private void blockingSensorArrayMoveImpl(int target) {
@@ -214,13 +221,18 @@ public class LocalRobotController implements RobotController {
 	}
 
 	public void blockingSensorArrayMove(int target) {
+		logger.info("Got sensor array move : " + target + " clicks");
 		sensorArrayMotor.reset();
+		configureSensorMotor();
 		if (target > 0) {
 			sensorArrayMotor.setPolarity("normal");
 		} else {
+			logger.info("Inverse polarity");
 			sensorArrayMotor.setPolarity("inversed");
+			target=-target;
 		}
-		blockingSensorArrayMoveImpl(target);
+		blockingSensorArrayMoveImpl(getSensorArrayPosition() + target);
+		logger.info("Move complete");
 	}
 
 }

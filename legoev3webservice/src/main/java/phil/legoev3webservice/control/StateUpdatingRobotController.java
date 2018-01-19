@@ -44,7 +44,9 @@ public class StateUpdatingRobotController implements RobotController {
 		AdvanceResults res = controller.advanceWithoutCollision(clicks);
 
 		state.advance(res.getDistance() * RobotCalibration.MOVE_CM_PER_CLICK);
-		state.rotate(res.getRotation() * RobotCalibration.ROTATE_DEGREES_PER_CLICK);
+		double rotate = res.getRotation() * RobotCalibration.ROTATE_DEGREES_PER_CLICK;
+		logger.info("Rotated by : "+ rotate +" degrees");
+		state.rotate(rotate);
 
 		if (res.pressed) {
 			map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);

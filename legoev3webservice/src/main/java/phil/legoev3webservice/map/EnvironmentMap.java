@@ -1,12 +1,21 @@
 package phil.legoev3webservice.map;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 import gnu.trove.map.hash.TIntDoubleHashMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 import phil.legoev3webservice.control.FilteredSensorData;
 import phil.legoev3webservice.robot.RobotCalibration;
 
-public class EnvironmentMap {
+public class EnvironmentMap implements Serializable {
 
+	private static final long serialVersionUID = -6127184558344282497L;
 	public static final int UNKNOWN = 0;
 	public static final int KNOWN_CLEAR = 1;
 	public static final int OBSTRUCTION = 2;
@@ -131,4 +140,22 @@ public class EnvironmentMap {
 
 		}
 	}
+
+	public static void save(String fname, EnvironmentMap map) throws IOException {
+		try (FileOutputStream fileOut = new FileOutputStream(fname);
+				ObjectOutputStream out = new ObjectOutputStream(fileOut);) {
+			out.writeObject(map);
+		}
+
+	}
+
+	public static EnvironmentMap load(String fname) throws FileNotFoundException, IOException, ClassNotFoundException {
+		try (FileInputStream fileIn = new FileInputStream(fname);
+				ObjectInputStream in = new ObjectInputStream(fileIn);) {
+			EnvironmentMap e = (EnvironmentMap) in.readObject();
+			return e;
+		}
+
+	}
+
 }

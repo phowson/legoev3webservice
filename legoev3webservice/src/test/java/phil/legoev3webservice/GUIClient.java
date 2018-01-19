@@ -3,6 +3,7 @@ package phil.legoev3webservice;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Robot;
 import java.awt.event.ActionEvent;
@@ -143,13 +144,49 @@ public class GUIClient {
 
 		southPanel.add(autoDrive);
 
+		JButton stopAutoDrive = new JButton("Stop");
+		stopAutoDrive.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onStop();
+			}
+		});
+
+		southPanel.add(stopAutoDrive);
+
+		JButton saveMap = new JButton("Save Map");
+		saveMap.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onSaveMap();
+			}
+		});
+
+		southPanel.add(saveMap);
+
 		mainPanel.add(southPanel, BorderLayout.SOUTH);
 
 		frame = new JFrame("EV3 Robot Control Panel");
 		frame.add(mainPanel);
-		frame.setPreferredSize(new Dimension(800, 800));
+		frame.setPreferredSize(new Dimension(1200, 800));
 		frame.pack();
 		frame.setVisible(true);
+
+	}
+
+	protected void onSaveMap() {
+
+		try {
+			EnvironmentMap.save(JOptionPane.showInputDialog("File name"), map);
+		} catch (HeadlessException | IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void onStop() {
+		// TODO Auto-generated method stub
 
 	}
 
@@ -164,7 +201,16 @@ public class GUIClient {
 	}
 
 	protected void onTrim() {
+		final double trim = Double.parseDouble(JOptionPane.showInputDialog(frame, "Trim by how many clicks?"));
 
+		bgExec.execute(new Runnable() {
+
+			@Override
+			public void run() {
+				contoller.blockingSensorArrayMove((int) Math.round(trim));
+				updateGui();
+			}
+		});
 	}
 
 	protected void onReverse() {
