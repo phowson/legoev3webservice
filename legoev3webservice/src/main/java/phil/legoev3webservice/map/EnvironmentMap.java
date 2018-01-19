@@ -168,4 +168,19 @@ public class EnvironmentMap implements Serializable {
 
 	}
 
+	public void fillVisited(int x, int y, int hardObsticleWidthCm) {
+		int halfW = hardObsticleWidthCm / 2;
+		for (int sx = x - halfW; sx < x + halfW; ++sx) {
+			for (int sy = y - halfW; sy < y + halfW; ++sy) {
+				int dx = sx - x;
+				int dy = sy - y;
+
+				if (Math.sqrt(dx * dx + dy * dy) < halfW) {
+					setVisited(sx, sy);
+				}
+			}
+
+		}
+	}
+
 }

@@ -48,7 +48,21 @@ public class StateUpdatingRobotController implements RobotController {
 	public synchronized AdvanceResults advanceWithoutCollision(int clicks) {
 		AdvanceResults res = controller.advanceWithoutCollision(clicks);
 
-		state.advance(res.getDistance() * RobotCalibration.MOVE_CM_PER_CLICK);
+		double x = state.x_CM;
+		double y = state.y_CM;
+
+		double vx = Math.cos(state.heading_DEG * Math.PI / 180.0);
+		double vy = Math.sin(state.heading_DEG * Math.PI / 180.0);
+
+		double dcm = res.getDistance() * RobotCalibration.MOVE_CM_PER_CLICK;
+
+		for (int i = 0; i < dcm; ++i) {
+			map.fillVisited((int) x, (int) y, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+			x += vx;
+			y += vy;
+		}
+
+		state.advance(dcm);
 		double rotate = res.getRotation() * RobotCalibration.ROTATE_DEGREES_PER_CLICK;
 		logger.info("Rotated by : " + rotate + " degrees");
 		state.rotate(rotate);
@@ -70,6 +84,7 @@ public class StateUpdatingRobotController implements RobotController {
 		ScanData sweep = controller.fullScannerSweep(scanSize, scanStep);
 		logger.info("Sweep : " + sweep);
 		map.apply(state, filter.filter(sweep));
+		map.fillVisited((int) state.x_CM, (int) state.y_CM, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		return sweep;
 	}
 

@@ -26,28 +26,32 @@ public class MapImageRenderer {
 		for (int i = 0; i < map.mapWidth; ++i) {
 			for (int j = 0; j < map.mapWidth; ++j) {
 
-				int rgb = myWhite.getRGB();
+				Color rgb = myWhite;
 				switch (map.getAt(i, j)) {
 				case EnvironmentMap.UNKNOWN:
-					rgb = myWhite.getRGB();
+					rgb = myWhite;
 					break;
 				case EnvironmentMap.KNOWN_CLEAR:
-					rgb = myGray.getRGB();
+					rgb = myGray;
 					break;
 				case EnvironmentMap.OBSTRUCTION:
-					rgb = myBlack.getRGB();
+					rgb = myBlack;
 					break;
 				case EnvironmentMap.HARD_OBSTRUCTION:
-					rgb = myBlue.getRGB();
+					rgb = myBlue;
 					break;
 
 				case EnvironmentMap.DANGER:
-					rgb = myRed.getRGB();
+					rgb = myRed;
 					break;
 
 				}
 
-				image.setRGB(i, j, rgb);
+				if (map.isVisited(i, j)) {
+					rgb = new Color(rgb.getRed()/2, rgb.getGreen()/2, rgb.getBlue()/2);
+				}
+
+				image.setRGB(i, j, rgb.getRGB());
 
 			}
 
@@ -77,7 +81,7 @@ public class MapImageRenderer {
 		if (targetX > 0) {
 			graphics.setColor(myBlack);
 			graphics.drawOval(targetX - 10, targetY - 10, 20, 20);
-			graphics.drawString("Target", targetX -50, targetY);
+			graphics.drawString("Target", targetX - 50, targetY);
 		}
 
 		return image;
