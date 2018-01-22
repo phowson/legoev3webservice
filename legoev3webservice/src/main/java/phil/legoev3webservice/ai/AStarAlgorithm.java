@@ -75,12 +75,15 @@ public class AStarAlgorithm {
 		}
 
 		List<Point> out = new ArrayList<>();
-		pathCost = finalPoint.cost;
-		while (finalPoint != null) {
-			out.add(new Point(finalPoint.x, finalPoint.y));
-			finalPoint = finalPoint.pred;
+		if (finalPoint!=null) {
+		
+			pathCost = finalPoint.cost;
+			while (finalPoint != null) {
+				out.add(new Point(finalPoint.x, finalPoint.y));
+				finalPoint = finalPoint.pred;
+			}
+			Collections.reverse(out);
 		}
-		Collections.reverse(out);
 
 		return out;
 

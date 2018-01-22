@@ -207,9 +207,7 @@ public class EnvironmentMap implements Serializable {
 		for (int z = 0; z < d2; ++z) {
 			int x = (int) Math.round(vecX * z + x_CM);
 			int y = (int) Math.round(vecY * z + y_CM);
-
-			if (getAt(x, y) != HARD_OBSTRUCTION)
-				setArea(x, y, KNOWN_CLEAR);
+			safeSetAt(x, y, KNOWN_CLEAR);
 		}
 
 		if (!Double.isInfinite(dist)) {
@@ -221,16 +219,6 @@ public class EnvironmentMap implements Serializable {
 			fillInArea(obstructionX, obstructionY, OBSTRUCTION, RobotCalibration.SENSOR_RESOLUTION);
 
 		}
-	}
-
-	private void setArea(int x, int y, int v) {
-
-		safeSetAt(x, y, v);
-		safeSetAt(x - 1, y, v);
-		safeSetAt(x + 1, y, v);
-		safeSetAt(x, y - 1, v);
-		safeSetAt(x, y + 1, v);
-
 	}
 
 	private void safeSetAt(int x, int y, int z) {

@@ -63,30 +63,19 @@ public class SweepAreaController {
 	}
 
 	public boolean driveOneStep(PathListener listener) {
-		if (this.autoDriveController.getaStarAlgorithm().alreadyInTargetArea()) {
+		AStarAlgorithm as = this.autoDriveController.getaStarAlgorithm();
+		if (as.alreadyInTargetArea() || environmentMap.isVisited(as.getTargetX(), as.getTargetY())) {
 			if (!findNextUnvisitedPoint()) {
 				return false;
 			}
 		}
 
 		List<Point> path = this.autoDriveController.driveOneStep(listener);
-		if (path.isEmpty()) {
-			environmentMap.fillVisited(this.autoDriveController.getaStarAlgorithm().getTargetX(),
-					this.autoDriveController.getaStarAlgorithm().getTargetY(), RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
-
-			if (!findNextUnvisitedPoint()) {
-				return false;
-			}
-		}
-		if (this.autoDriveController.getaStarAlgorithm().getPathCost() > RobotCalibration.AI_DANGER_PENALTY ) {
-			// Hard to reach. Ignore.
-			environmentMap.fillVisited(this.autoDriveController.getaStarAlgorithm().getTargetX(),
-					this.autoDriveController.getaStarAlgorithm().getTargetY(), RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
-
+		if (path.isEmpty() || as.getPathCost() > RobotCalibration.AI_DANGER_PENALTY) {
+			environmentMap.fillVisited(as.getTargetX(), as.getTargetY(), RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		}
 
-		listener.onNewPath(path, this.autoDriveController.getaStarAlgorithm().getTargetX(),
-				this.autoDriveController.getaStarAlgorithm().getTargetY());
+		listener.onNewPath(path, as.getTargetX(), as.getTargetY());
 
 		return true;
 	}
