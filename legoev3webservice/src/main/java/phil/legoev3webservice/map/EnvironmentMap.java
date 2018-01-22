@@ -160,6 +160,10 @@ public class EnvironmentMap implements Serializable {
 		double y_CM = currentState.y_CM + vecY * RobotCalibration.SENSOR_OFFSET_Y
 				+ vecY2 * RobotCalibration.SENSOR_OFFSET_Y;
 
+		if (cm > RobotCalibration.SENSOR_INFINITY_POINT_CM) {
+			cm = Double.POSITIVE_INFINITY;
+		}
+
 		fillDataAtHeading(cm, overallHeadingRad, x_CM, y_CM);
 	}
 
