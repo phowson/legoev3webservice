@@ -7,7 +7,7 @@ public class RobotCalibration {
 	// public static final int SCAN_ITERS = 60;
 	// public static final int SCAN_CLICKS_PER_ITER = 27 * 3;
 
-	public static final int SCAN_CLICKS_IN_FULL_SCAN = 180 * 27;
+	public static final int SCAN_CLICKS_IN_FULL_SCAN = 200 * 27;
 
 	public static final int SCAN_ITERS = 40;
 	public static final int SCAN_CLICKS_PER_ITER = 122;
@@ -44,5 +44,7 @@ public class RobotCalibration {
 	public static final double SENSOR_OFFSET_Y = -2;
 	public static final double AI_DANGER_PENALTY = 50000;
 	public static final double AI_OBSTRUCTION_PENALTY = 100000;
+
+	public static final int SENSOR_COLOR_STOP = 10;
 
 }

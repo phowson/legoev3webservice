@@ -1,7 +1,11 @@
 package phil.legoev3webservice.ai;
 
 import java.awt.Point;
+import java.awt.Robot;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import phil.legoev3webservice.control.AdvanceResults;
 import phil.legoev3webservice.control.RobotController;
@@ -11,6 +15,7 @@ import phil.legoev3webservice.map.RobotState;
 import phil.legoev3webservice.robot.RobotCalibration;
 
 public class AutoDriveController {
+	private static final Logger logger = LoggerFactory.getLogger(AutoDriveController.class);
 	private static final int COLLISION_REVERSE_CLICKS = (int) (3 * RobotCalibration.MOVE_CLICKS_PER_CM);
 	private final AStarAlgorithm aStarAlgorithm;
 	private final RobotController robotController;
@@ -61,6 +66,7 @@ public class AutoDriveController {
 		int r = rotateResults.ticksRotated;
 		boolean rescanRequired = false;
 		if (requested - r >= 10) {
+			logger.info("Rotate didn't seem to work");
 			listener.stateChanged();
 			robotController.reverse(COLLISION_REVERSE_CLICKS);
 			listener.stateChanged();
@@ -72,8 +78,11 @@ public class AutoDriveController {
 					.advanceWithoutCollision((int) Math.round(lc.distance * RobotCalibration.MOVE_CLICKS_PER_CM));
 			listener.stateChanged();
 			if (res.pressed) {
+				logger.info("Stopped. " + res);
 				robotController.reverse(Math.max(COLLISION_REVERSE_CLICKS, res.getDistance() / 2));
 				listener.stateChanged();
+				rescanRequired = true;
+			} else if (res.endProximity < 2 || res.reflectedLightIntensity > RobotCalibration.SENSOR_COLOR_STOP) {
 				rescanRequired = true;
 			}
 		}

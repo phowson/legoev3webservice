@@ -36,7 +36,7 @@ public class StateUpdatingRobotController implements RobotController {
 
 	public synchronized RotateResult rotate(int iclicks) {
 		RotateResult results = controller.rotate(iclicks);
-		map.apply(state, filter.filter(results), false);		
+		map.apply(state, filter.filter(results), false);
 		int r = results.ticksRotated;
 		int sn = 1;
 		if (iclicks < 0) {
@@ -46,7 +46,6 @@ public class StateUpdatingRobotController implements RobotController {
 		if (r < iclicks - 10) {
 			map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		}
-
 
 		return results;
 	}
@@ -71,6 +70,9 @@ public class StateUpdatingRobotController implements RobotController {
 		state.advance(dcm);
 		double rotate = res.getRotation() * RobotCalibration.ROTATE_DEGREES_PER_CLICK;
 		logger.info("Rotated by : " + rotate + " degrees");
+
+		logger.info("res.endProximity = " + res.endProximity * RobotCalibration.SENSOR_CM_PER_UNIT + " cm");
+		logger.info("res.startProximity = " + res.startProximity * RobotCalibration.SENSOR_CM_PER_UNIT + " cm");
 		state.rotate(rotate);
 
 		map.applySingleSensorReading(state, res.endProximity * RobotCalibration.SENSOR_CM_PER_UNIT);

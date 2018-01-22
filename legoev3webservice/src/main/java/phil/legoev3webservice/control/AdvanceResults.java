@@ -27,4 +27,11 @@ public class AdvanceResults {
 		return (this.clicksAdvancedLeft - this.clicksAdvancedRight) / 2;
 	}
 
+	@Override
+	public String toString() {
+		return "AdvanceResults [clicksAdvancedLeft=" + clicksAdvancedLeft + ", clicksAdvancedRight="
+				+ clicksAdvancedRight + ", startProximity=" + startProximity + ", endProximity=" + endProximity
+				+ ", reflectedLightIntensity=" + reflectedLightIntensity + ", pressed=" + pressed + "]";
+	}
+
 }

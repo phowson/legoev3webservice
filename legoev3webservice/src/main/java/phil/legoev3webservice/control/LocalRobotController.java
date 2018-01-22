@@ -113,8 +113,6 @@ public class LocalRobotController implements RobotController {
 
 		int initalPosL = getLeftMotorPosition();
 		int initalPosR = getRightMotorPosition();
-		int leftTarget = initalPosL + clicks;
-		int rightTarget = initalPosR + clicks;
 		leftMotor.setPosition_SP(clicks);
 		rightMotor.setPosition_SP(clicks);
 		leftMotor.runToRelPos();
@@ -163,9 +161,6 @@ public class LocalRobotController implements RobotController {
 		leftMotor.setPosition_SP(clicks);
 		rightMotor.setPosition_SP(clicks);
 
-		int leftTarget = initalPosL + clicks;
-		int rightTarget = initalPosR + clicks;
-
 		int prox = irSensor.getProximity();
 		int intensity = colorSensor.getReflectedLightIntensity();
 		int startProx = prox;
@@ -173,35 +168,28 @@ public class LocalRobotController implements RobotController {
 		if (prox > 0 && intensity < 10 && !touchSensor.isPressed()) {
 			leftMotor.runToRelPos();
 			rightMotor.runToRelPos();
-			boolean slow = false;
 			while (motorsRunning()) {
 
 				// Querying the sensor takes a bit of time, so act as soon as we
 				// have a value
-				prox = irSensor.getProximity();
-				if (prox == 0) {
+				if (irSensor.getProximity() == 0) {
 					leftMotor.stop();
 					rightMotor.stop();
+					logger.info("Stopping due to collision");
 					break;
-				}
-
-				if (!slow) {
-					if (prox < 5 || leftTarget - getLeftMotorPosition() < RobotCalibration.MOVE_CLICKS_PER_CM * 5
-							|| rightTarget - getRightMotorPosition() < RobotCalibration.MOVE_CLICKS_PER_CM * 5) {
-						logger.info("Slow down...");
-						leftMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
-						rightMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
-						slow = true;
-					}
-
 				}
 
 				intensity = colorSensor.getReflectedLightIntensity();
 				// Querying the sensor takes a bit of time, so act as soon as we
 				// have a value
-				if (intensity > 10 || touchSensor.isPressed()) {
+				if (intensity > RobotCalibration.SENSOR_COLOR_STOP || touchSensor.isPressed()) {
 					leftMotor.stop();
 					rightMotor.stop();
+					if (touchSensor.isPressed()) {
+						logger.info("Stopping due to collision");
+					} else {
+						logger.info("Stopping due to color sensor");
+					}
 					break;
 				}
 
@@ -209,7 +197,7 @@ public class LocalRobotController implements RobotController {
 
 			// Sleep breifly to allow motors to fully stop turning
 			try {
-				Thread.sleep(500);
+				Thread.sleep(PAUSE_MILLIS);
 			} catch (InterruptedException e) {
 			}
 		}

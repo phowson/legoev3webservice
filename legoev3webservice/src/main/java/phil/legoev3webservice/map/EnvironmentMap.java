@@ -122,7 +122,7 @@ public class EnvironmentMap implements Serializable {
 		return mapData.get(genKey(x_CM, y_CM));
 	}
 
-	public int setAt(int x_CM, int y_CM, int value) {
+	private int setAt(int x_CM, int y_CM, int value) {
 		return mapData.put(genKey(x_CM, y_CM), value);
 	}
 
@@ -236,7 +236,7 @@ public class EnvironmentMap implements Serializable {
 				double zz = Math.sqrt(xdst * xdst + ydst * ydst);
 				if (zz < radius) {
 					int v = getAt(dx, dy);
-					if (v != OBSTRUCTION && v != HARD_OBSTRUCTION) {
+					if (vz == HARD_OBSTRUCTION || (v != OBSTRUCTION && v != HARD_OBSTRUCTION)) {
 						setAt(dx, dy, vz);
 					}
 				}
