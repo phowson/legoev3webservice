@@ -81,12 +81,11 @@ public class AStarAlgorithm {
 			finalPoint = finalPoint.pred;
 		}
 		Collections.reverse(out);
-		
-		
+
 		return out;
 
 	}
-	
+
 	public double getPathCost() {
 		return pathCost;
 	}
@@ -133,15 +132,13 @@ public class AStarAlgorithm {
 
 		if (c == EnvironmentMap.OBSTRUCTION || c == EnvironmentMap.HARD_OBSTRUCTION) {
 			d += RobotCalibration.AI_OBSTRUCTION_PENALTY;
+		} else if (c == EnvironmentMap.DANGER) {
+			d += RobotCalibration.AI_DANGER_PENALTY;
 		}
-			if (c == EnvironmentMap.DANGER) {
-				d += RobotCalibration.AI_DANGER_PENALTY;
-			}
-			double existingDist = map.getAStarDist(x, y);
-			if (existingDist > pathLen) {
-				searchPoints.add(new SearchPoint(x, y, d, pred, pathLen));
-			}
-		
+		double existingDist = map.getAStarDist(x, y);
+		if (existingDist > pathLen) {
+			searchPoints.add(new SearchPoint(x, y, d, pred, pathLen));
+		}
 
 	}
 

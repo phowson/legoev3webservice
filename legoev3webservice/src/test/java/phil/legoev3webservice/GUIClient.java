@@ -7,6 +7,8 @@ import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -53,7 +55,7 @@ public class GUIClient implements PathListener {
 	private volatile AutoDriveThread autoDriveThread;
 	private volatile SweepAreaThread sweepAreaThread;
 	private JButton scanButton;
-	private JButton advanceButton; 
+	private JButton advanceButton;
 	private JButton rotateButton;
 	private JButton reverseButton;
 	private JButton trimButton;
@@ -87,7 +89,7 @@ public class GUIClient implements PathListener {
 
 		StateUpdatingRobotController controller = new StateUpdatingRobotController(client, state, map);
 		AutoDriveController adc = new AutoDriveController(new AStarAlgorithm(state, map, 999, 500), controller, state,
-				linearisePath);
+				linearisePath, map);
 		new GUIClient(controller, state, map, adc).run();
 	}
 
@@ -98,6 +100,41 @@ public class GUIClient implements PathListener {
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		JPanel mapPanel = new JPanel();
 		mapLabel = new JLabel(new ImageIcon(mapImage));
+
+		mapLabel.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (autoDrive.isEnabled()) {
+
+					autoDriveController.getaStarAlgorithm().setTargetX(targetX = e.getX());
+					autoDriveController.getaStarAlgorithm().setTargetY(targetY = e.getY());
+					updateGui();
+				}
+
+			}
+		});
+
 		mapPanel.add(mapLabel);
 		JScrollPane mapScrollPane = new JScrollPane(mapPanel);
 		mainPanel.add(mapScrollPane, BorderLayout.CENTER);

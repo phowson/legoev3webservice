@@ -6,6 +6,7 @@ import java.util.List;
 import phil.legoev3webservice.control.AdvanceResults;
 import phil.legoev3webservice.control.RobotController;
 import phil.legoev3webservice.control.RotateResult;
+import phil.legoev3webservice.map.EnvironmentMap;
 import phil.legoev3webservice.map.RobotState;
 import phil.legoev3webservice.robot.RobotCalibration;
 
@@ -15,14 +16,16 @@ public class AutoDriveController {
 	private final RobotController robotController;
 	private final RobotState robotState;
 	private final LinearisePath linearisePath;
+	private final EnvironmentMap environmentMap;
 
 	public AutoDriveController(AStarAlgorithm aStarAlgorithm, RobotController robotController, RobotState robotState,
-			LinearisePath linearisePath) {
+			LinearisePath linearisePath, EnvironmentMap map) {
 		super();
 		this.aStarAlgorithm = aStarAlgorithm;
 		this.robotController = robotController;
 		this.robotState = robotState;
 		this.linearisePath = linearisePath;
+		this.environmentMap = map;
 	}
 
 	public LinearisePath getLinearisePath() {
@@ -75,7 +78,8 @@ public class AutoDriveController {
 			}
 		}
 
-		if (rescanRequired) {
+		if (rescanRequired || environmentMap.hasUnknownInfront(this.robotState.x_CM, robotState.y_CM,
+				robotState.heading_DEG, RobotCalibration.HARD_OBSTICLE_WIDTH_CM, 10)) {
 			robotController.continuousScannerSweep(RobotCalibration.SCAN_CLICKS_IN_FULL_SCAN);
 		}
 

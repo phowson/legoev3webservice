@@ -18,7 +18,7 @@ public class LocalRobotController implements RobotController {
 	private static final int MAIN_MOTOR_SPEED2 = 500;
 	private static final int MAIN_MOTOR_SPEED_ROTATE = 66;
 	private static final String POSITION = "position";
-	private static final long PAUSE_MILLIS = 250;
+	private static final long PAUSE_MILLIS = 150;
 	private InfraredSensor irSensor = new InfraredSensor(new LegoPort(LegoPort.INPUT_1));
 	private ColorSensor colorSensor = new ColorSensor(new LegoPort(LegoPort.INPUT_2));
 	private Motor sensorArrayMotor = new Motor(new LegoPort(LegoPort.OUTPUT_C));
@@ -186,12 +186,12 @@ public class LocalRobotController implements RobotController {
 				}
 
 				if (!slow) {
-					int lp = getLeftMotorPosition();
-					int rp = getRightMotorPosition();
-					if (prox < 5 || leftTarget - lp < RobotCalibration.MOVE_CLICKS_PER_CM * 5
-							|| rightTarget - rp < RobotCalibration.MOVE_CLICKS_PER_CM * 5) {
+					if (prox < 5 || leftTarget - getLeftMotorPosition() < RobotCalibration.MOVE_CLICKS_PER_CM * 5
+							|| rightTarget - getRightMotorPosition() < RobotCalibration.MOVE_CLICKS_PER_CM * 5) {
+						logger.info("Slow down...");
 						leftMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
 						rightMotor.setSpeed_SP(MAIN_MOTOR_SPEED);
+						slow = true;
 					}
 
 				}
@@ -209,27 +209,25 @@ public class LocalRobotController implements RobotController {
 
 			// Sleep breifly to allow motors to fully stop turning
 			try {
-				Thread.sleep(PAUSE_MILLIS);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
 		}
 		int finalPosL = getLeftMotorPosition();
 		int finalPosR = getRightMotorPosition();
 
-		return new AdvanceResults((finalPosL - initalPosL), (finalPosR - initalPosR), startProx, prox,
-				colorSensor.getReflectedLightIntensity(), touchSensor.isPressed());
+		return new AdvanceResults((finalPosL - initalPosL), (finalPosR - initalPosR), startProx,
+				irSensor.getProximity(), colorSensor.getReflectedLightIntensity(), touchSensor.isPressed());
 
 	}
 
-	private void contSensorSweep(int clicks, int startVal, int multiplier, TIntArrayList clickData,
-			TIntArrayList irData) {
+	private void contSensorSweep(int clicks, TIntArrayList clickData, TIntArrayList irData) {
 
-		int startPos = getSensorArrayPosition();
 		sensorArrayMotor.setPosition_SP(clicks);
 		sensorArrayMotor.runToAbsPos();
 
 		while (sensorArrayMotor.getStateViaString().contains("running")) {
-			clickData.add((getSensorArrayPosition() - startPos) * multiplier + startVal);
+			clickData.add((getSensorArrayPosition()));
 			irData.add(irSensor.getProximity());
 		}
 		// Sleep breifly to allow motors to fully stop turning
@@ -269,10 +267,10 @@ public class LocalRobotController implements RobotController {
 		TIntArrayList irData = new TIntArrayList();
 		sensorArrayMotor.setPolarity("normal");
 
-		int halfClicks = scanSteps/2;
-		contSensorSweep(-halfClicks, 0, 1, clickData, irData);
-		contSensorSweep(halfClicks, clickData.get(clickData.size() - 1), -1, clickData, irData);
-		contSensorSweep(0, clickData.get(clickData.size() - 1), 1, clickData, irData);
+		int halfClicks = scanSteps / 2;
+		contSensorSweep(-halfClicks, clickData, irData);
+		contSensorSweep(halfClicks, clickData, irData);
+		contSensorSweep(0, clickData, irData);
 
 		return new ContinuousScanData(clickData.toArray(), irData.toArray());
 	}

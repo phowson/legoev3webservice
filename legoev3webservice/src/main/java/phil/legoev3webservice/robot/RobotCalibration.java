@@ -6,8 +6,8 @@ public class RobotCalibration {
 
 	// public static final int SCAN_ITERS = 60;
 	// public static final int SCAN_CLICKS_PER_ITER = 27 * 3;
-	
-	public static final int SCAN_CLICKS_IN_FULL_SCAN = 180*27;
+
+	public static final int SCAN_CLICKS_IN_FULL_SCAN = 180 * 27;
 
 	public static final int SCAN_ITERS = 40;
 	public static final int SCAN_CLICKS_PER_ITER = 122;
@@ -15,7 +15,7 @@ public class RobotCalibration {
 
 	public static final double SCAN_DEGREES_PER_VALUE = 180.0 / SCAN_ITERS;
 
-	public static final int ROTATE_CLICKS_PER_90DEGREES = 490;
+	public static final int ROTATE_CLICKS_PER_90DEGREES = 510;
 	public static final double ROTATE_CLICKS_PER_DEGREE = ROTATE_CLICKS_PER_90DEGREES / 90.0;
 	public static final double ROTATE_DEGREES_PER_CLICK = 1.0 / ROTATE_CLICKS_PER_DEGREE;
 
@@ -35,13 +35,14 @@ public class RobotCalibration {
 	public static final int SENSOR_INFINITY_POINT_UNITS = (int) (SENSOR_INFINITY_POINT_CM / SENSOR_CM_PER_UNIT);
 
 	public static final double DANGER_RADIUS_CM = 15;
+	public static final int SENSOR_RESOLUTION = 5;
+
 	public static final int HARD_OBSTICLE_WIDTH_CM = 27;
-	public static final double AI_DANGER_PENALTY = 1000;
 	public static final double DEFAULT_LINEAR_TOLERANCE = 150;
 
 	public static final double SENSOR_OFFSET_X = 6;
 	public static final double SENSOR_OFFSET_Y = -2;
-	public static final double AI_OBSTRUCTION_PENALTY = 10000;
-	
+	public static final double AI_DANGER_PENALTY = 50000;
+	public static final double AI_OBSTRUCTION_PENALTY = 100000;
 
 }
