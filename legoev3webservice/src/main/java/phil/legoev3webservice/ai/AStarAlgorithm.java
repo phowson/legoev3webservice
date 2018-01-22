@@ -64,7 +64,7 @@ public class AStarAlgorithm {
 				break;
 			}
 
-			if (this.map.getAStarDist(sp.x, sp.y) - 0.5 <= sp.pathLength) {
+			if (this.map.getAStarDist(sp.x, sp.y) <= sp.pathLength) {
 				// Already know how to get here quicker
 				continue;
 			}
@@ -75,8 +75,8 @@ public class AStarAlgorithm {
 		}
 
 		List<Point> out = new ArrayList<>();
-		if (finalPoint!=null) {
-		
+		if (finalPoint != null) {
+
 			pathCost = finalPoint.cost;
 			while (finalPoint != null) {
 				out.add(new Point(finalPoint.x, finalPoint.y));
@@ -131,13 +131,13 @@ public class AStarAlgorithm {
 		int dx = x - targetX;
 		int dy = y - targetY;
 
+		if (c == EnvironmentMap.OBSTRUCTION || c == EnvironmentMap.HARD_OBSTRUCTION) {
+			pathLen += RobotCalibration.AI_OBSTRUCTION_PENALTY;
+		} else if (c == EnvironmentMap.DANGER) {
+			pathLen += RobotCalibration.AI_DANGER_PENALTY;
+		}
 		double d = Math.sqrt(dx * dx + dy * dy) + pathLen;
 
-		if (c == EnvironmentMap.OBSTRUCTION || c == EnvironmentMap.HARD_OBSTRUCTION) {
-			d += RobotCalibration.AI_OBSTRUCTION_PENALTY;
-		} else if (c == EnvironmentMap.DANGER) {
-			d += RobotCalibration.AI_DANGER_PENALTY;
-		}
 		double existingDist = map.getAStarDist(x, y);
 		if (existingDist > pathLen) {
 			searchPoints.add(new SearchPoint(x, y, d, pred, pathLen));
