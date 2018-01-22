@@ -36,6 +36,7 @@ public class StateUpdatingRobotController implements RobotController {
 
 	public synchronized RotateResult rotate(int iclicks) {
 		RotateResult results = controller.rotate(iclicks);
+		map.apply(state, filter.filter(results), false);		
 		int r = results.ticksRotated;
 		int sn = 1;
 		if (iclicks < 0) {
@@ -45,7 +46,7 @@ public class StateUpdatingRobotController implements RobotController {
 		if (r < iclicks - 10) {
 			map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		}
-		map.apply(state, filter.filter(results), false);
+
 
 		return results;
 	}

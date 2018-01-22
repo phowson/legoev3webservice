@@ -34,47 +34,49 @@ public class AutoDriveController {
 	}
 
 	public void initialise() {
-		//robotController.fullScannerSweep(RobotCalibration.SCAN_ITERS, RobotCalibration.SCAN_CLICKS_PER_ITER);
-		robotController.continuousScannerSweep(RobotCalibration.SCAN_CLICKS_IN_FULL_SCAN);
-		robotController.rotate((int) (180 * RobotCalibration.ROTATE_CLICKS_PER_DEGREE));
+		robotController.rotate((int) (360 * RobotCalibration.ROTATE_CLICKS_PER_DEGREE));
 	}
 
 	public List<Point> driveOneStep(PathListener listener) {
-		//robotController.fullScannerSweep(RobotCalibration.SCAN_ITERS, RobotCalibration.SCAN_CLICKS_PER_ITER);
-		robotController.continuousScannerSweep(RobotCalibration.SCAN_CLICKS_IN_FULL_SCAN);
 		List<Point> path = aStarAlgorithm.getAStarPath();
 		if (path.isEmpty()) {
-			//reached goal.
+			// reached goal.
 			return path;
 		}
-		
+
 		listener.onNewPath(path, aStarAlgorithm.getTargetX(), aStarAlgorithm.getTargetY());
 		RobotMoveCommand lc = linearisePath.getNextLinearCommand(path);
 		double d = (lc.heading - robotState.heading_DEG);
-		if (d>180) {
-			d = 180-d;
+		if (d > 180) {
+			d = 180 - d;
 		}
-		if (d<-180) {
-			d = d +360;
+		if (d < -180) {
+			d = d + 360;
 		}
-		int requested = (int) Math
-				.round(d * RobotCalibration.ROTATE_CLICKS_PER_DEGREE);
+		int requested = (int) Math.round(d * RobotCalibration.ROTATE_CLICKS_PER_DEGREE);
 		RotateResult rotateResults = robotController.rotate(requested);
 		int r = rotateResults.ticksRotated;
+		boolean rescanRequired = false;
 		if (requested - r >= 10) {
 			listener.stateChanged();
 			robotController.reverse(COLLISION_REVERSE_CLICKS);
 			listener.stateChanged();
-			return path;
-		}
-		listener.stateChanged();
-
-		AdvanceResults res = robotController
-				.advanceWithoutCollision((int) Math.round(lc.distance * RobotCalibration.MOVE_CLICKS_PER_CM));
-		listener.stateChanged();
-		if (res.pressed) {
-			robotController.reverse(Math.max(COLLISION_REVERSE_CLICKS, res.getDistance() / 2));
+			rescanRequired = true;
+		} else {
 			listener.stateChanged();
+
+			AdvanceResults res = robotController
+					.advanceWithoutCollision((int) Math.round(lc.distance * RobotCalibration.MOVE_CLICKS_PER_CM));
+			listener.stateChanged();
+			if (res.pressed) {
+				robotController.reverse(Math.max(COLLISION_REVERSE_CLICKS, res.getDistance() / 2));
+				listener.stateChanged();
+				rescanRequired = true;
+			}
+		}
+
+		if (rescanRequired) {
+			robotController.continuousScannerSweep(RobotCalibration.SCAN_CLICKS_IN_FULL_SCAN);
 		}
 
 		return path;

@@ -64,14 +64,14 @@ public class LocalRobotController implements RobotController {
 		rightMotor.runToRelPos();
 		TIntArrayList clickData = new TIntArrayList();
 		TIntArrayList irData = new TIntArrayList();
-		int initialPosition = leftMotor.getPosition();
+		int initialPosition = getLeftMotorPosition();
 		while (motorsRunning()) {
 			if (touchSensor.isPressed()) {
 				leftMotor.stop();
 				rightMotor.stop();
 				break;
 			}
-			clicks = leftMotor.getPosition() - initialPosition;
+			clicks = getLeftMotorPosition() - initialPosition;
 			if (iclicks < 0) {
 				clicks = -clicks;
 			}
@@ -269,8 +269,9 @@ public class LocalRobotController implements RobotController {
 		TIntArrayList irData = new TIntArrayList();
 		sensorArrayMotor.setPolarity("normal");
 
-		contSensorSweep(-scanSteps / 2, 0, 1, clickData, irData);
-		contSensorSweep(scanSteps, clickData.get(clickData.size() - 1), -1, clickData, irData);
+		int halfClicks = scanSteps/2;
+		contSensorSweep(-halfClicks, 0, 1, clickData, irData);
+		contSensorSweep(halfClicks, clickData.get(clickData.size() - 1), -1, clickData, irData);
 		contSensorSweep(0, clickData.get(clickData.size() - 1), 1, clickData, irData);
 
 		return new ContinuousScanData(clickData.toArray(), irData.toArray());

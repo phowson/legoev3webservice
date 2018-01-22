@@ -29,20 +29,35 @@ public class SweepAreaController {
 	}
 
 	private boolean findNextUnvisitedPoint() {
+
 		environmentMap.fillVisited((int) state.x_CM, (int) state.y_CM, (int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
-		Point point = environmentMap.findClosestUnvisited((int) state.x_CM, (int) state.y_CM,
-				(int) RobotCalibration.SENSOR_INFINITY_POINT_CM-1, false);
-		if (point==null) {
-			point = environmentMap.findClosestUnvisited((int) state.x_CM, (int) state.y_CM,
-					(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM, false);
+		while (true) {
+			Point point = environmentMap.findClosestUnvisited((int) state.x_CM, (int) state.y_CM,
+					(int) RobotCalibration.SENSOR_INFINITY_POINT_CM - 1, false);
+			if (point == null) {
+				point = environmentMap.findClosestUnvisited((int) state.x_CM, (int) state.y_CM,
+						(int) RobotCalibration.HARD_OBSTICLE_WIDTH_CM, false);
+			}
+
+			if (point == null) {
+				return false;
+			}
+
+			this.autoDriveController.getaStarAlgorithm().setTargetX(point.x);
+			this.autoDriveController.getaStarAlgorithm().setTargetY(point.y);
+
+			int x_CM = this.autoDriveController.getaStarAlgorithm().getTargetX();
+			int y_CM = this.autoDriveController.getaStarAlgorithm().getTargetY();
+			int v = environmentMap.getAt(x_CM, y_CM);
+
+			if (v == EnvironmentMap.KNOWN_CLEAR) {
+				break;
+			} else {
+				environmentMap.fillVisited(point.x, point.y, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+
+			}
 		}
 
-		if (point == null) {
-			return false;
-		}
-
-		this.autoDriveController.getaStarAlgorithm().setTargetX(point.x);
-		this.autoDriveController.getaStarAlgorithm().setTargetY(point.y);
 		return true;
 
 	}
@@ -53,35 +68,23 @@ public class SweepAreaController {
 				return false;
 			}
 		}
-		int x_CM = this.autoDriveController.getaStarAlgorithm().getTargetX();
-		int y_CM = this.autoDriveController.getaStarAlgorithm().getTargetY();
-		int v = environmentMap.getAt(x_CM, y_CM);
-
-		if (v != EnvironmentMap.KNOWN_CLEAR) {
-			// No longer unoccupied?
-			if (!findNextUnvisitedPoint()) {
-				return false;
-			}
-			listener.onNewPath(Collections.emptyList(), this.autoDriveController.getaStarAlgorithm().getTargetX(),
-					this.autoDriveController.getaStarAlgorithm().getTargetY());
-
-		}
 
 		List<Point> path = this.autoDriveController.driveOneStep(listener);
 		if (path.isEmpty()) {
-			environmentMap.fillVisited(this.autoDriveController.getaStarAlgorithm().getTargetX(), this.autoDriveController.getaStarAlgorithm().getTargetY(), RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
-			
+			environmentMap.fillVisited(this.autoDriveController.getaStarAlgorithm().getTargetX(),
+					this.autoDriveController.getaStarAlgorithm().getTargetY(), RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+
 			if (!findNextUnvisitedPoint()) {
 				return false;
 			}
 		}
-		if (this.autoDriveController.getaStarAlgorithm().getPathCost() > RobotCalibration.AI_DANGER_PENALTY*10) {
+		if (this.autoDriveController.getaStarAlgorithm().getPathCost() > RobotCalibration.AI_DANGER_PENALTY * 10) {
 			// Hard to reach. Ignore.
-			environmentMap.fillVisited(this.autoDriveController.getaStarAlgorithm().getTargetX(), this.autoDriveController.getaStarAlgorithm().getTargetY(), RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
-			
+			environmentMap.fillVisited(this.autoDriveController.getaStarAlgorithm().getTargetX(),
+					this.autoDriveController.getaStarAlgorithm().getTargetY(), RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+
 		}
-		
-		
+
 		listener.onNewPath(path, this.autoDriveController.getaStarAlgorithm().getTargetX(),
 				this.autoDriveController.getaStarAlgorithm().getTargetY());
 

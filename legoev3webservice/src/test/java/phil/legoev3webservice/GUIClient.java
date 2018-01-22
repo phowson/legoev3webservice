@@ -53,7 +53,7 @@ public class GUIClient implements PathListener {
 	private volatile AutoDriveThread autoDriveThread;
 	private volatile SweepAreaThread sweepAreaThread;
 	private JButton scanButton;
-	private JButton advanceButton;
+	private JButton advanceButton; 
 	private JButton rotateButton;
 	private JButton reverseButton;
 	private JButton trimButton;
