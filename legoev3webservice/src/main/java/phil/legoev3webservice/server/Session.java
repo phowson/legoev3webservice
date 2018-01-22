@@ -11,6 +11,7 @@ import phil.legoev3webservice.NetworkMessageConstants;
 import phil.legoev3webservice.control.AdvanceResults;
 import phil.legoev3webservice.control.ContinuousScanData;
 import phil.legoev3webservice.control.RobotController;
+import phil.legoev3webservice.control.RotateResult;
 import phil.legoev3webservice.control.ScanData;
 
 public class Session {
@@ -122,9 +123,6 @@ public class Session {
 			case NetworkMessageConstants.MSG_ROTATE:
 				onRotate();
 				break;
-			case NetworkMessageConstants.MSG_SCAN:
-				onScan();
-				break;
 
 			case NetworkMessageConstants.MSG_SENSORARRAYMOVE:
 				onSensorArrayMove();
@@ -155,24 +153,6 @@ public class Session {
 		}
 	}
 
-	private void onScan() throws InterruptedException, IOException {
-
-		int scanSize = inboundBuffer.getInt();
-		int scanStep = inboundBuffer.getInt();
-		ScanData results = controller.fullScannerSweep(scanSize, scanStep);
-		outboundBuffer.position(0);
-		outboundBuffer.putInt(results.irData.length * 4 * 4);
-		write(outboundBuffer, results.irData);
-		write(outboundBuffer, results.irData2);
-		write(outboundBuffer, results.colorData);
-		write(outboundBuffer, results.colorData2);
-		outboundBuffer.flip();
-		while (outboundBuffer.hasRemaining()) {
-			this.channel.write(outboundBuffer);
-		}
-
-	}
-
 	private void onContScan() throws IOException {
 		int scanClicks = inboundBuffer.getInt();
 		ContinuousScanData results = controller.continuousScannerSweep(scanClicks);
@@ -197,9 +177,13 @@ public class Session {
 
 	private void onRotate() throws IOException {
 		int iclicks = inboundBuffer.getInt();
-		int clicksMoved = controller.rotate(iclicks);
+		RotateResult rotate = controller.rotate(iclicks);
 		outboundBuffer.position(0);
-		outboundBuffer.putInt(clicksMoved);
+		outboundBuffer.putInt(rotate.ticksRotated);
+		ContinuousScanData results = rotate.scanData;
+		outboundBuffer.putInt(results.irSensor.length * 8);
+		write(outboundBuffer, results.steps);
+		write(outboundBuffer, results.irSensor);
 		outboundBuffer.flip();
 		while (outboundBuffer.hasRemaining()) {
 			this.channel.write(outboundBuffer);

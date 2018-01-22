@@ -5,6 +5,7 @@ import java.util.List;
 
 import phil.legoev3webservice.control.AdvanceResults;
 import phil.legoev3webservice.control.RobotController;
+import phil.legoev3webservice.control.RotateResult;
 import phil.legoev3webservice.map.RobotState;
 import phil.legoev3webservice.robot.RobotCalibration;
 
@@ -58,8 +59,8 @@ public class AutoDriveController {
 		}
 		int requested = (int) Math
 				.round(d * RobotCalibration.ROTATE_CLICKS_PER_DEGREE);
-		int r = robotController.rotate(requested);
-
+		RotateResult rotateResults = robotController.rotate(requested);
+		int r = rotateResults.ticksRotated;
 		if (requested - r >= 10) {
 			listener.stateChanged();
 			robotController.reverse(COLLISION_REVERSE_CLICKS);

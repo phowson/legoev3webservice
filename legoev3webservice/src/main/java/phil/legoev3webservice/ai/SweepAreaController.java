@@ -75,6 +75,13 @@ public class SweepAreaController {
 				return false;
 			}
 		}
+		if (this.autoDriveController.getaStarAlgorithm().getPathCost() > RobotCalibration.AI_DANGER_PENALTY*10) {
+			// Hard to reach. Ignore.
+			environmentMap.fillVisited(this.autoDriveController.getaStarAlgorithm().getTargetX(), this.autoDriveController.getaStarAlgorithm().getTargetY(), RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
+			
+		}
+		
+		
 		listener.onNewPath(path, this.autoDriveController.getaStarAlgorithm().getTargetX(),
 				this.autoDriveController.getaStarAlgorithm().getTargetY());
 

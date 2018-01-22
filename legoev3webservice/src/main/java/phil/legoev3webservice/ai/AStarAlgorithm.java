@@ -18,6 +18,7 @@ public class AStarAlgorithm {
 	private int targetX;
 	private int targetY;
 	private double tolerance = 10;
+	private double pathCost;
 	private final static double root2 = Math.sqrt(2);
 
 	public void setTolerance(double tolerance) {
@@ -74,14 +75,20 @@ public class AStarAlgorithm {
 		}
 
 		List<Point> out = new ArrayList<>();
-
+		pathCost = finalPoint.cost;
 		while (finalPoint != null) {
 			out.add(new Point(finalPoint.x, finalPoint.y));
 			finalPoint = finalPoint.pred;
 		}
 		Collections.reverse(out);
+		
+		
 		return out;
 
+	}
+	
+	public double getPathCost() {
+		return pathCost;
 	}
 
 	public boolean alreadyInTargetArea() {

@@ -32,8 +32,9 @@ public class StateUpdatingRobotController implements RobotController {
 		return controller;
 	}
 
-	public synchronized int rotate(int iclicks) {
-		int r = controller.rotate(iclicks);
+	public synchronized RotateResult rotate(int iclicks) {
+		RotateResult results = controller.rotate(iclicks);
+		int r = results.ticksRotated;
 		int sn = 1;
 		if (iclicks < 0) {
 			sn = -1;
@@ -42,7 +43,9 @@ public class StateUpdatingRobotController implements RobotController {
 		if (r < iclicks - 10) {
 			map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		}
-		return r;
+		map.apply(state, filter.filter(results), false);
+
+		return results;
 	}
 
 	public synchronized AdvanceResults advanceWithoutCollision(int clicks) {
@@ -80,14 +83,6 @@ public class StateUpdatingRobotController implements RobotController {
 		return c;
 	}
 
-	public synchronized ScanData fullScannerSweep(int scanSize, int scanStep) {
-		ScanData sweep = controller.fullScannerSweep(scanSize, scanStep);
-		logger.info("Sweep : " + sweep);
-		map.apply(state, filter.filter(sweep));
-		map.fillVisited((int) state.x_CM, (int) state.y_CM, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
-		return sweep;
-	}
-
 	public synchronized void blockingSensorArrayMove(int target) {
 		controller.blockingSensorArrayMove(target);
 	}
@@ -95,7 +90,7 @@ public class StateUpdatingRobotController implements RobotController {
 	@Override
 	public ContinuousScanData continuousScannerSweep(int scanSteps) {
 		ContinuousScanData data = controller.continuousScannerSweep(scanSteps);
-		map.apply(state, filter.filter(data));
+		map.apply(state, filter.filter(data), true);
 		map.fillVisited((int) state.x_CM, (int) state.y_CM, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		return data;
 	}

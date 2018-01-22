@@ -9,6 +9,7 @@ import phil.legoev3webservice.client.RobotClient;
 import phil.legoev3webservice.control.AdvanceResults;
 import phil.legoev3webservice.control.ContinuousScanData;
 import phil.legoev3webservice.control.DummyRobotController;
+import phil.legoev3webservice.control.RotateResult;
 import phil.legoev3webservice.control.ScanData;
 import phil.legoev3webservice.server.RobotControlServer;
 
@@ -63,8 +64,15 @@ public class AppTest extends TestCase {
 
 	public void testClientRotate() throws Exception {
 		try (RobotClient client = new RobotClient(new InetSocketAddress("localhost", 5050));) {
-			int res = client.rotate(10);
-			assertEquals(10, res);
+			RotateResult r = client.rotate(20);
+			assertEquals(20, r.ticksRotated);
+			ContinuousScanData res = r.scanData;
+			assertEquals(10, res.steps.length);
+			assertEquals(10, res.irSensor.length);
+
+			for (int i : res.steps) {
+				assertEquals(0, i);
+			}
 		}
 	}
 
@@ -87,22 +95,6 @@ public class AppTest extends TestCase {
 			assertEquals(10, res.clicksAdvancedLeft);
 			assertEquals(10, res.clicksAdvancedRight);
 			assertEquals(false, res.pressed);
-
-		}
-	}
-
-	public void testClientScan() throws Exception {
-		try (RobotClient client = new RobotClient(new InetSocketAddress("localhost", 5050));) {
-			ScanData res = client.fullScannerSweep(10, 5);
-			assertEquals(10, res.colorData.length);
-			assertEquals(10, res.colorData2.length);
-
-			assertEquals(10, res.irData.length);
-			assertEquals(10, res.irData2.length);
-
-			for (int i : res.irData) {
-				assertEquals(0, i);
-			}
 
 		}
 	}

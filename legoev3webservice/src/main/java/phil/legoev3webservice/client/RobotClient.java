@@ -12,6 +12,7 @@ import phil.legoev3webservice.NetworkMessageConstants;
 import phil.legoev3webservice.control.AdvanceResults;
 import phil.legoev3webservice.control.ContinuousScanData;
 import phil.legoev3webservice.control.RobotController;
+import phil.legoev3webservice.control.RotateResult;
 import phil.legoev3webservice.control.ScanData;
 
 public class RobotClient implements RobotController, Closeable {
@@ -27,7 +28,7 @@ public class RobotClient implements RobotController, Closeable {
 		this.socket.finishConnect();
 	}
 
-	public int rotate(int iclicks) {
+	public RotateResult rotate(int iclicks) {
 
 		try {
 			outBuffer.clear();
@@ -37,11 +38,16 @@ public class RobotClient implements RobotController, Closeable {
 			outBuffer.flip();
 			this.socket.write(outBuffer);
 			inBuffer.clear();
-			while (inBuffer.position() < 4) {
+			inBuffer.limit(4);
+			while (inBuffer.hasRemaining()) {
 				this.socket.read(inBuffer);
 			}
 			inBuffer.flip();
-			return inBuffer.getInt();
+			int r = inBuffer.getInt();
+			inBuffer.clear();
+			ContinuousScanData contScanData = readContScanData();
+			return new RotateResult(contScanData, r);
+
 		} catch (IOException e) {
 			logger.error("IO Error", e);
 			throw new RuntimeException(e);
@@ -96,45 +102,6 @@ public class RobotClient implements RobotController, Closeable {
 		}
 	}
 
-	public ScanData fullScannerSweep(int scanSize, int scanStep) {
-		try {
-			outBuffer.clear();
-			outBuffer.putInt(9);
-			outBuffer.put((byte) NetworkMessageConstants.MSG_SCAN);
-			outBuffer.putInt(scanSize);
-			outBuffer.putInt(scanStep);
-			outBuffer.flip();
-			this.socket.write(outBuffer);
-			inBuffer.clear();
-			inBuffer.limit(4);
-			while (inBuffer.hasRemaining()) {
-				this.socket.read(inBuffer);
-			}
-			inBuffer.flip();
-			int len = inBuffer.getInt();
-			inBuffer.clear();
-			inBuffer.limit(len);
-			while (inBuffer.hasRemaining()) {
-				this.socket.read(inBuffer);
-			}
-			inBuffer.flip();
-
-			int[] irData = new int[scanSize];
-			int[] irData2 = new int[scanSize];
-			int[] colorData = new int[scanSize];
-			int[] colorData2 = new int[scanSize];
-			readIntArray(irData);
-			readIntArray(irData2);
-			readIntArray(colorData);
-			readIntArray(colorData2);
-
-			return new ScanData(irData, colorData, irData2, colorData2);
-		} catch (IOException e) {
-			logger.error("IO Error", e);
-			throw new RuntimeException(e);
-		}
-	}
-
 	private void readIntArray(int[] d) {
 		for (int i = 0; i < d.length; ++i) {
 			d[i] = inBuffer.getInt();
@@ -176,30 +143,34 @@ public class RobotClient implements RobotController, Closeable {
 			outBuffer.flip();
 			this.socket.write(outBuffer);
 			inBuffer.clear();
-			inBuffer.limit(4);
-			while (inBuffer.hasRemaining()) {
-				this.socket.read(inBuffer);
-			}
-			inBuffer.flip();
-			int len = inBuffer.getInt();
-			inBuffer.clear();
-			inBuffer.limit(len);
-			while (inBuffer.hasRemaining()) {
-				this.socket.read(inBuffer);
-			}
-			inBuffer.flip();
-
-			int[] clicks = new int[len / 8];
-			int[] irData = new int[len / 8];
-
-			readIntArray(clicks);
-			readIntArray(irData);
-
-			return new ContinuousScanData(clicks, irData);
+			return readContScanData();
 		} catch (IOException e) {
 			logger.error("IO Error", e);
 			throw new RuntimeException(e);
 		}
+	}
+
+	private ContinuousScanData readContScanData() throws IOException {
+		inBuffer.limit(4);
+		while (inBuffer.hasRemaining()) {
+			this.socket.read(inBuffer);
+		}
+		inBuffer.flip();
+		int len = inBuffer.getInt();
+		inBuffer.clear();
+		inBuffer.limit(len);
+		while (inBuffer.hasRemaining()) {
+			this.socket.read(inBuffer);
+		}
+		inBuffer.flip();
+
+		int[] clicks = new int[len / 8];
+		int[] irData = new int[len / 8];
+
+		readIntArray(clicks);
+		readIntArray(irData);
+
+		return new ContinuousScanData(clicks, irData);
 	}
 
 }

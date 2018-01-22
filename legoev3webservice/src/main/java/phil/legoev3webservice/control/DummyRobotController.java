@@ -8,9 +8,9 @@ public class DummyRobotController implements RobotController {
 
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Session.class);
 
-	public int rotate(int iclicks) {
+	public RotateResult rotate(int iclicks) {
 		logger.info("Got command to rotate : " + iclicks);
-		return iclicks;
+		return new RotateResult(new ContinuousScanData(new int[10], new int[10]), iclicks);
 	}
 
 	public AdvanceResults advanceWithoutCollision(int clicks) {

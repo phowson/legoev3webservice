@@ -39,7 +39,7 @@ public class EnvironmentMap implements Serializable {
 		int sx = -1;
 		int sy = -1;
 		double bestSoFar = inverse ? 0 : Double.POSITIVE_INFINITY;
-		
+
 		for (int k : mapData.keys()) {
 			int md = mapData.get(k);
 			if (visitedData.get(k) == 0 && md == KNOWN_CLEAR) {
@@ -49,9 +49,9 @@ public class EnvironmentMap implements Serializable {
 				int dy = y - ky;
 				double dist = Math.sqrt(dx * dx + dy * dy);
 				if (dist > minDist) {
-					
+
 					if ((dist < bestSoFar && !inverse) || (dist > bestSoFar && inverse)) {
-					
+
 						sx = kx;
 						sy = ky;
 						bestSoFar = dist;
@@ -75,7 +75,7 @@ public class EnvironmentMap implements Serializable {
 	}
 
 	public boolean isVisited(int x_CM, int y_CM) {
-		if (visitedData!=null)
+		if (visitedData != null)
 			return visitedData.get(genKey(x_CM, y_CM)) == 1;
 		return false;
 	}
@@ -118,21 +118,29 @@ public class EnvironmentMap implements Serializable {
 
 	}
 
-	public void apply(RobotState currentState, FilteredSensorData sensorData) {
+	public void apply(RobotState currentState, FilteredSensorData sensorData, boolean useOffset) {
 
 		double overallHeadingDeg = currentState.heading_DEG;
 		double overallHeadingRad = overallHeadingDeg * PI_180;
 
+		double x_CM;
+		double y_CM;
 		double vecX = Math.cos(overallHeadingRad);
 		double vecY = Math.sin(overallHeadingRad);
 
-		double vecX2 = Math.cos(overallHeadingRad + Math.PI / 2);
-		double vecY2 = Math.sin(overallHeadingRad + Math.PI / 2);
+		if (useOffset) {
 
-		double x_CM = currentState.x_CM + vecX * RobotCalibration.SENSOR_OFFSET_X
-				+ vecX2 * RobotCalibration.SENSOR_OFFSET_Y;
-		double y_CM = currentState.y_CM + vecY * RobotCalibration.SENSOR_OFFSET_Y
-				+ vecY2 * RobotCalibration.SENSOR_OFFSET_Y;
+			double vecX2 = Math.cos(overallHeadingRad + Math.PI / 2);
+			double vecY2 = Math.sin(overallHeadingRad + Math.PI / 2);
+
+			x_CM = currentState.x_CM + vecX * RobotCalibration.SENSOR_OFFSET_X
+					+ vecX2 * RobotCalibration.SENSOR_OFFSET_Y;
+			y_CM = currentState.y_CM + vecY * RobotCalibration.SENSOR_OFFSET_Y
+					+ vecY2 * RobotCalibration.SENSOR_OFFSET_Y;
+		} else {
+			x_CM = currentState.x_CM;
+			y_CM = currentState.y_CM;
+		}
 
 		for (int i = 0; i < sensorData.distance_CM.length; ++i) {
 			overallHeadingDeg = currentState.heading_DEG + sensorData.headings[i];

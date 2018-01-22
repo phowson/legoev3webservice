@@ -79,11 +79,14 @@ public class ScanDataFilter {
 	}
 
 	public FilteredSensorData filter(ContinuousScanData data) {
+		return filterImpl(data, -RobotCalibration.SCAN_DEGREES_PER_CLICK);
+	}
 
+	private FilteredSensorData filterImpl(ContinuousScanData data, double mult) {
 		double[] headings = new double[data.steps.length];
 		double[] distance_CM = new double[data.steps.length];
 		for (int i = 0; i < headings.length; ++i) {
-			headings[i] = -data.steps[i] * RobotCalibration.SCAN_DEGREES_PER_CLICK;
+			headings[i] = data.steps[i] * mult;
 			double dst = interpolate(data.irSensor[i]);
 			if (dst >= RobotCalibration.SENSOR_INFINITY_POINT_CM) {
 				dst = Double.POSITIVE_INFINITY;
@@ -93,6 +96,10 @@ public class ScanDataFilter {
 
 		FilteredSensorData out = new FilteredSensorData(headings, distance_CM);
 		return out;
+	}
+
+	public FilteredSensorData filter(RotateResult results) {
+		return filterImpl(results.scanData, RobotCalibration.ROTATE_DEGREES_PER_CLICK);
 	}
 
 }
