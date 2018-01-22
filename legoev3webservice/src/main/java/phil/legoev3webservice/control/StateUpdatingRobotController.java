@@ -1,5 +1,7 @@
 package phil.legoev3webservice.control;
 
+import java.awt.Robot;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +71,8 @@ public class StateUpdatingRobotController implements RobotController {
 		double rotate = res.getRotation() * RobotCalibration.ROTATE_DEGREES_PER_CLICK;
 		logger.info("Rotated by : " + rotate + " degrees");
 		state.rotate(rotate);
+
+		map.applySingleSensorReading(state, res.endProximity * RobotCalibration.SENSOR_CM_PER_UNIT);
 
 		if (res.pressed) {
 			map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);

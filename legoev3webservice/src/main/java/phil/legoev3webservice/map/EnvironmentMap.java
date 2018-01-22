@@ -118,6 +118,23 @@ public class EnvironmentMap implements Serializable {
 
 	}
 
+	public void applySingleSensorReading(RobotState currentState, double cm) {
+
+		double overallHeadingDeg = currentState.heading_DEG;
+		double overallHeadingRad = overallHeadingDeg * PI_180;
+
+		double vecX = Math.cos(overallHeadingRad);
+		double vecY = Math.sin(overallHeadingRad);
+
+		double vecX2 = Math.cos(overallHeadingRad + Math.PI / 2);
+		double vecY2 = Math.sin(overallHeadingRad + Math.PI / 2);
+
+		double x_CM = currentState.x_CM + vecX * RobotCalibration.SENSOR_OFFSET_X + vecX2 * RobotCalibration.SENSOR_OFFSET_Y;
+		double y_CM = currentState.y_CM + vecY * RobotCalibration.SENSOR_OFFSET_Y + vecY2 * RobotCalibration.SENSOR_OFFSET_Y;
+		
+		fillDataAtHeading(cm, overallHeadingRad, x_CM, y_CM);
+	}
+
 	public void apply(RobotState currentState, FilteredSensorData sensorData, boolean useOffset) {
 
 		double overallHeadingDeg = currentState.heading_DEG;
@@ -145,31 +162,37 @@ public class EnvironmentMap implements Serializable {
 		for (int i = 0; i < sensorData.distance_CM.length; ++i) {
 			overallHeadingDeg = currentState.heading_DEG + sensorData.headings[i];
 			overallHeadingRad = overallHeadingDeg * PI_180;
-			vecX = Math.cos(overallHeadingRad);
-			vecY = Math.sin(overallHeadingRad);
-
 			double dist = sensorData.distance_CM[i];
-			double d2 = Math.min(RobotCalibration.SENSOR_INFINITY_POINT_CM, dist);
-			for (int z = 0; z < d2; ++z) {
-				int x = (int) Math.round(vecX * z + x_CM);
-				int y = (int) Math.round(vecY * z + y_CM);
-
-				setArea(x, y, KNOWN_CLEAR);
-			}
-
-			if (!Double.isInfinite(dist)) {
-
-				int obstructionX = (int) Math.round(vecX * dist + x_CM);
-				int obstructionY = (int) Math.round(vecY * dist + y_CM);
-
-				fillInArea(obstructionX, obstructionY, DANGER, RobotCalibration.DANGER_RADIUS_CM);
-
-				setArea(obstructionX, obstructionY, OBSTRUCTION);
-
-			}
+			fillDataAtHeading(dist, overallHeadingRad, x_CM, y_CM);
 
 		}
 
+	}
+
+	private void fillDataAtHeading(double dist, double overallHeadingRad, double x_CM, double y_CM) {
+		double vecX;
+		double vecY;
+		vecX = Math.cos(overallHeadingRad);
+		vecY = Math.sin(overallHeadingRad);
+
+		double d2 = Math.min(RobotCalibration.SENSOR_INFINITY_POINT_CM, dist);
+		for (int z = 0; z < d2; ++z) {
+			int x = (int) Math.round(vecX * z + x_CM);
+			int y = (int) Math.round(vecY * z + y_CM);
+
+			setArea(x, y, KNOWN_CLEAR);
+		}
+
+		if (!Double.isInfinite(dist)) {
+
+			int obstructionX = (int) Math.round(vecX * dist + x_CM);
+			int obstructionY = (int) Math.round(vecY * dist + y_CM);
+
+			fillInArea(obstructionX, obstructionY, DANGER, RobotCalibration.DANGER_RADIUS_CM);
+
+			setArea(obstructionX, obstructionY, OBSTRUCTION);
+
+		}
 	}
 
 	private void setArea(int x, int y, int v) {
