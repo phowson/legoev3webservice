@@ -33,7 +33,7 @@ public class RobotCalibration {
 	public static final float ULTRASOUND_COLLISION_DISTANCE = 50;
 	public static final int SENSOR_INFINITY_POINT_UNITS = (int) (SENSOR_INFINITY_POINT_CM * SENSOR_POINTS_PER_CM);
 
-	public static final double DANGER_RADIUS_CM = 15;
+	public static final double DANGER_RADIUS_CM = 10;
 	public static final int SENSOR_RESOLUTION = 4;
 
 	public static final int HARD_OBSTICLE_WIDTH_CM = 27;
