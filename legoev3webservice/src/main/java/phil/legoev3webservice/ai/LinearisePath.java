@@ -34,16 +34,11 @@ public class LinearisePath {
 			return new RobotMoveCommand(0, 0);
 		}
 		int i = 0;
-		boolean ignoreLineOk = false;
-		while (i < path.size() ) {
+		while (i < path.size()) {
 			double cost = computeLineCost(path, i);
 
-			if (!ignoreLineOk && !lineIsOk(path, i)) {
-				if (i < 2) {
-					ignoreLineOk = true;
-				} else {
-					break;
-				}
+			if (!lineIsOk(path, i)) {
+				break;
 			}
 
 			if (cost > maxAllowableCost) {
@@ -51,10 +46,10 @@ public class LinearisePath {
 			}
 			i = i + 1;
 		}
-		if (i>0){
+		if (i > 0) {
 			i = i - 1;
 		}
-		
+
 		Point pi = path.get(i);
 		double finalX = pi.getX();
 		double finalY = pi.getY();
@@ -88,12 +83,20 @@ public class LinearisePath {
 		double dy1 = dy / l;
 		double x = state.x_CM;
 		double y = state.y_CM;
+		boolean startedInBadArea = false;
 		for (int z = 0; z < l; ++z) {
 			int v = map.getAt((int) x, (int) y);
-			if (v == EnvironmentMap.OBSTRUCTION || v == EnvironmentMap.HARD_OBSTRUCTION 
-					//|| v==EnvironmentMap.DANGER
-					) {
-				return false;
+			if (v == EnvironmentMap.OBSTRUCTION || v == EnvironmentMap.HARD_OBSTRUCTION || v == EnvironmentMap.DANGER) {
+
+				if (z < 2) {
+					startedInBadArea = true;
+				} else if (!startedInBadArea) {
+					return false;
+				}
+			} else {
+				if (z >= 2) {
+					startedInBadArea = false;
+				}
 			}
 			x += dx1;
 			y += dy1;

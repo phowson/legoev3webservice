@@ -5,6 +5,7 @@ import org.ev3dev.hardware.ports.LegoPort;
 import org.ev3dev.hardware.sensors.ColorSensor;
 import org.ev3dev.hardware.sensors.InfraredSensor;
 import org.ev3dev.hardware.sensors.TouchSensor;
+import org.ev3dev.hardware.sensors.UltrasonicSensor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +20,10 @@ public class LocalRobotController implements RobotController {
 	private static final int MAIN_MOTOR_SPEED_ROTATE = 66;
 	private static final String POSITION = "position";
 	private static final long PAUSE_MILLIS = 150;
-	private InfraredSensor irSensor = new InfraredSensor(new LegoPort(LegoPort.INPUT_1));
-	private ColorSensor colorSensor = new ColorSensor(new LegoPort(LegoPort.INPUT_2));
+
+	private UltrasonicSensor movableSensor = new UltrasonicSensor(new LegoPort(LegoPort.INPUT_1));
+	private InfraredSensor irSensor = new InfraredSensor(new LegoPort(LegoPort.INPUT_2));
+	private ColorSensor colorSensor = new ColorSensor(new LegoPort(LegoPort.INPUT_4));
 	private Motor sensorArrayMotor = new Motor(new LegoPort(LegoPort.OUTPUT_C));
 	private TouchSensor touchSensor = new TouchSensor(new LegoPort(LegoPort.INPUT_3));
 
@@ -29,6 +32,7 @@ public class LocalRobotController implements RobotController {
 
 	public LocalRobotController() {
 		resetSensorMotor();
+		movableSensor.setMode(UltrasonicSensor.SYSFS_CM_MODE);
 		irSensor.setMode(InfraredSensor.SYSFS_PROXIMITY_REQUIRED_MODE);
 		colorSensor.setMode(ColorSensor.SYSFS_REFLECTED_LIGHT_INTENSITY_MODE);
 
@@ -53,7 +57,7 @@ public class LocalRobotController implements RobotController {
 			leftMotor.setPolarity("inversed");
 			rightMotor.setPolarity("normal");
 		}
-
+		boolean originallyTriggered = edgeSensorsTriggered();
 		int initalPosL = getLeftMotorPosition();
 		int initalPosR = getRightMotorPosition();
 
@@ -65,8 +69,9 @@ public class LocalRobotController implements RobotController {
 		TIntArrayList clickData = new TIntArrayList();
 		TIntArrayList irData = new TIntArrayList();
 		int initialPosition = getLeftMotorPosition();
+
 		while (motorsRunning()) {
-			if (touchSensor.isPressed()) {
+			if (touchSensor.isPressed() || (edgeSensorsTriggered() && !originallyTriggered)) {
 				leftMotor.stop();
 				rightMotor.stop();
 				break;
@@ -76,7 +81,7 @@ public class LocalRobotController implements RobotController {
 				clicks = -clicks;
 			}
 			clickData.add(clicks);
-			irData.add(irSensor.getProximity());
+			irData.add((int) movableSensor.getDistanceCentimeters());
 
 		}
 		// Sleep breifly to allow motors to fully stop turning
@@ -90,6 +95,11 @@ public class LocalRobotController implements RobotController {
 
 		int d = ((finalPosL - initalPosL) + (finalPosR - initalPosR)) / 2;
 		return new RotateResult(new ContinuousScanData(clickData.toArray(), irData.toArray()), d);
+	}
+
+	private boolean edgeSensorsTriggered() {
+		return irSensor.getProximity() < 2
+				|| colorSensor.getReflectedLightIntensity() > RobotCalibration.SENSOR_COLOR_STOP;
 	}
 
 	private void setupMainMotors(boolean slow) {
@@ -161,28 +171,26 @@ public class LocalRobotController implements RobotController {
 		leftMotor.setPosition_SP(clicks);
 		rightMotor.setPosition_SP(clicks);
 
-		int prox = irSensor.getProximity();
-		int intensity = colorSensor.getReflectedLightIntensity();
+		int prox = (int) movableSensor.getDistanceCentimeters();
 		int startProx = prox;
 
-		if (prox > 0 && intensity < 10 && !touchSensor.isPressed()) {
+		if (prox > RobotCalibration.ULTRASOUND_COLLISION_DISTANCE && !edgeSensorsTriggered() && !touchSensor.isPressed()) {
 			leftMotor.runToRelPos();
 			rightMotor.runToRelPos();
 			while (motorsRunning()) {
 
 				// Querying the sensor takes a bit of time, so act as soon as we
 				// have a value
-				if (irSensor.getProximity() == 0) {
+				if (movableSensor.getDistanceCentimeters() < RobotCalibration.ULTRASOUND_COLLISION_DISTANCE) {
 					leftMotor.stop();
 					rightMotor.stop();
 					logger.info("Stopping due to collision");
 					break;
 				}
 
-				intensity = colorSensor.getReflectedLightIntensity();
 				// Querying the sensor takes a bit of time, so act as soon as we
 				// have a value
-				if (intensity > RobotCalibration.SENSOR_COLOR_STOP || touchSensor.isPressed()) {
+				if (edgeSensorsTriggered() || touchSensor.isPressed()) {
 					leftMotor.stop();
 					rightMotor.stop();
 					if (touchSensor.isPressed()) {
@@ -205,7 +213,8 @@ public class LocalRobotController implements RobotController {
 		int finalPosR = getRightMotorPosition();
 
 		return new AdvanceResults((finalPosL - initalPosL), (finalPosR - initalPosR), startProx,
-				irSensor.getProximity(), colorSensor.getReflectedLightIntensity(), touchSensor.isPressed());
+				(int) movableSensor.getDistanceCentimeters(), edgeSensorsTriggered(),
+				touchSensor.isPressed());
 
 	}
 
@@ -216,7 +225,7 @@ public class LocalRobotController implements RobotController {
 
 		while (sensorArrayMotor.getStateViaString().contains("running")) {
 			clickData.add((getSensorArrayPosition()));
-			irData.add(irSensor.getProximity());
+			irData.add((int) movableSensor.getDistanceCentimeters());
 		}
 		// Sleep breifly to allow motors to fully stop turning
 		try {

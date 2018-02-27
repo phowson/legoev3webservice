@@ -22,29 +22,30 @@ public class RobotCalibration {
 	public static final double MOVE_CLICKS_PER_CM = 2002 / 56.1;
 	public static final double MOVE_CM_PER_CLICK = 1.0 / MOVE_CLICKS_PER_CM;
 
-	public static final double[] SENSOR_CALIBRATION_PC = new double[] { 0, 4, 13, 26, 40, 54, 66, 72, 80, 100 };
+	public static final double[] SENSOR_CALIBRATION_PC = new double[] { 0, 2550 };
 
-	public static final double[] SENSOR_CALIBRATION_CM = new double[] { 0, 7, 12.5, 24.5, 36, 51, 68, 83, 102, 220 };
-
-	public static final double SENSOR_CM_PER_UNIT1 = 30.0 / 34.5;
-	public static final double SENSOR_CM_PER_UNIT2 = 45 / 50.5;
-	public static final double SENSOR_CM_PER_UNIT = (SENSOR_CM_PER_UNIT1 + SENSOR_CM_PER_UNIT2) / 2.0;
+	public static final double[] SENSOR_CALIBRATION_CM = new double[] { 0, 255 };
 
 	// Anything beyond 60cm count as infinity;
-	public static final double SENSOR_INFINITY_POINT_CM = 70;
-	public static final int SENSOR_INFINITY_POINT_UNITS = (int) (SENSOR_INFINITY_POINT_CM / SENSOR_CM_PER_UNIT);
+	public static final double SENSOR_INFINITY_POINT_CM = 200;
+
+	public static final double SENSOR_POINTS_PER_CM = 10;
+	public static final float ULTRASOUND_COLLISION_DISTANCE = 50;
+	public static final int SENSOR_INFINITY_POINT_UNITS = (int) (SENSOR_INFINITY_POINT_CM * SENSOR_POINTS_PER_CM);
 
 	public static final double DANGER_RADIUS_CM = 15;
-	public static final int SENSOR_RESOLUTION = 5;
+	public static final int SENSOR_RESOLUTION = 4;
 
 	public static final int HARD_OBSTICLE_WIDTH_CM = 27;
 	public static final double DEFAULT_LINEAR_TOLERANCE = 150;
 
 	public static final double SENSOR_OFFSET_X = 6;
 	public static final double SENSOR_OFFSET_Y = -2;
-	public static final double AI_DANGER_PENALTY = 50000;
+	public static final double AI_DANGER_PENALTY =      5000;
 	public static final double AI_OBSTRUCTION_PENALTY = 100000;
 
 	public static final int SENSOR_COLOR_STOP = 10;
+
+	public static final double MAX_LINEAR_MOVE_CM = 100;
 
 }

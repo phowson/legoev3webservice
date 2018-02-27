@@ -199,6 +199,15 @@ public class EnvironmentMap implements Serializable {
 
 		}
 
+		for (int k : mapData.keys()) {
+			int kx = k % mapWidth;
+			int ky = k / mapWidth;
+			if (mapData.get(k) == OBSTRUCTION) {
+				fillInArea(kx, ky, DANGER, RobotCalibration.DANGER_RADIUS_CM);
+			}
+
+		}
+
 	}
 
 	private void fillDataAtHeading(double dist, double overallHeadingRad, double x_CM, double y_CM) {
@@ -219,7 +228,6 @@ public class EnvironmentMap implements Serializable {
 			int obstructionX = (int) Math.round(vecX * dist + x_CM);
 			int obstructionY = (int) Math.round(vecY * dist + y_CM);
 
-			fillInArea(obstructionX, obstructionY, DANGER, RobotCalibration.DANGER_RADIUS_CM);
 			fillInArea(obstructionX, obstructionY, OBSTRUCTION, RobotCalibration.SENSOR_RESOLUTION);
 
 		}

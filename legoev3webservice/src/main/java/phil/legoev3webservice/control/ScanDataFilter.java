@@ -11,35 +11,35 @@ public class ScanDataFilter {
 		double[] d = new double[6];
 		double[] d2 = new double[4];
 
-		FilteredSensorData out = new FilteredSensorData(new double[data.irData.length], new double[data.irData.length]);
+		FilteredSensorData out = new FilteredSensorData(new double[data.ultrasoundData.length], new double[data.ultrasoundData.length]);
 		double heading = 90;
-		for (int i = 0; i < data.irData.length; ++i) {
+		for (int i = 0; i < data.ultrasoundData.length; ++i) {
 			double dst;
 			if (i == 0) {
-				d2[0] = data.irData[i];
-				d2[1] = data.irData2[i];
-				d2[2] = data.irData[i + 1];
-				d2[3] = data.irData2[i + 1];
+				d2[0] = data.ultrasoundData[i];
+				d2[1] = data.ultrasoundData2[i];
+				d2[2] = data.ultrasoundData[i + 1];
+				d2[3] = data.ultrasoundData2[i + 1];
 
 				Arrays.sort(d2);
 
 				dst = interpolate(0.5 * (d2[1] + d2[2]));
 
-			} else if (i == data.irData.length - 1) {
-				d2[0] = data.irData[i];
-				d2[1] = data.irData2[i];
-				d2[2] = data.irData[i - 1];
-				d2[3] = data.irData2[i - 1];
+			} else if (i == data.ultrasoundData.length - 1) {
+				d2[0] = data.ultrasoundData[i];
+				d2[1] = data.ultrasoundData2[i];
+				d2[2] = data.ultrasoundData[i - 1];
+				d2[3] = data.ultrasoundData2[i - 1];
 				Arrays.sort(d2);
 				out.headings[i] = heading;
 				dst = interpolate(0.5 * (d2[1] + d2[2]));
 			} else {
-				d[0] = data.irData[i];
-				d[1] = data.irData2[i];
-				d[2] = data.irData[i - 1];
-				d[3] = data.irData2[i - 1];
-				d[4] = data.irData[i + 1];
-				d[5] = data.irData2[i + 1];
+				d[0] = data.ultrasoundData[i];
+				d[1] = data.ultrasoundData2[i];
+				d[2] = data.ultrasoundData[i - 1];
+				d[3] = data.ultrasoundData2[i - 1];
+				d[4] = data.ultrasoundData[i + 1];
+				d[5] = data.ultrasoundData2[i + 1];
 
 				Arrays.sort(d);
 
@@ -87,7 +87,7 @@ public class ScanDataFilter {
 		double[] distance_CM = new double[data.steps.length];
 		for (int i = 0; i < headings.length; ++i) {
 			headings[i] = data.steps[i] * mult;
-			double dst = interpolate(data.irSensor[i]);
+			double dst = interpolate(data.ultrasoundSensor[i]);
 			if (dst >= RobotCalibration.SENSOR_INFINITY_POINT_CM) {
 				dst = Double.POSITIVE_INFINITY;
 			}

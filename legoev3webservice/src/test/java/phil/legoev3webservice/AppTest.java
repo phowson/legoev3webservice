@@ -68,7 +68,7 @@ public class AppTest extends TestCase {
 			assertEquals(20, r.ticksRotated);
 			ContinuousScanData res = r.scanData;
 			assertEquals(10, res.steps.length);
-			assertEquals(10, res.irSensor.length);
+			assertEquals(10, res.ultrasoundSensor.length);
 
 			for (int i : res.steps) {
 				assertEquals(0, i);
@@ -103,7 +103,7 @@ public class AppTest extends TestCase {
 		try (RobotClient client = new RobotClient(new InetSocketAddress("localhost", 5050));) {
 			ContinuousScanData res = client.continuousScannerSweep(10);
 			assertEquals(10, res.steps.length);
-			assertEquals(10, res.irSensor.length);
+			assertEquals(10, res.ultrasoundSensor.length);
 
 			for (int i : res.steps) {
 				assertEquals(0, i);

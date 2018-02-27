@@ -36,7 +36,9 @@ public class StateUpdatingRobotController implements RobotController {
 
 	public synchronized RotateResult rotate(int iclicks) {
 		RotateResult results = controller.rotate(iclicks);
+
 		map.apply(state, filter.filter(results), false);
+
 		int r = results.ticksRotated;
 		int sn = 1;
 		if (iclicks < 0) {
@@ -71,13 +73,17 @@ public class StateUpdatingRobotController implements RobotController {
 		double rotate = res.getRotation() * RobotCalibration.ROTATE_DEGREES_PER_CLICK;
 		logger.info("Rotated by : " + rotate + " degrees");
 
-		logger.info("res.endProximity = " + res.endProximity * RobotCalibration.SENSOR_CM_PER_UNIT + " cm");
-		logger.info("res.startProximity = " + res.startProximity * RobotCalibration.SENSOR_CM_PER_UNIT + " cm");
+		logger.info("res.endProximity = " + res.endProximity / RobotCalibration.SENSOR_POINTS_PER_CM + " cm");
+		logger.info("res.startProximity = " + res.startProximity / RobotCalibration.SENSOR_POINTS_PER_CM + " cm");
+		logger.info("Ultrasound says we moved : "
+				+ (res.endProximity - res.startProximity) / RobotCalibration.SENSOR_POINTS_PER_CM);
+
 		state.rotate(rotate);
 
-		map.applySingleSensorReading(state, res.endProximity * RobotCalibration.SENSOR_CM_PER_UNIT);
+		 map.applySingleSensorReading(state, res.endProximity /
+		 RobotCalibration.SENSOR_POINTS_PER_CM);
 
-		if (res.pressed) {
+		if (res.pressed || res.edgeSensor) {
 			map.hitHardObsticle(state, RobotCalibration.HARD_OBSTICLE_WIDTH_CM);
 		}
 

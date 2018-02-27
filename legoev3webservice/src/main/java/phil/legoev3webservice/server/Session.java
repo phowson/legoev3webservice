@@ -157,9 +157,9 @@ public class Session {
 		int scanClicks = inboundBuffer.getInt();
 		ContinuousScanData results = controller.continuousScannerSweep(scanClicks);
 		outboundBuffer.position(0);
-		outboundBuffer.putInt(results.irSensor.length * 8);
+		outboundBuffer.putInt(results.ultrasoundSensor.length * 8);
 		write(outboundBuffer, results.steps);
-		write(outboundBuffer, results.irSensor);
+		write(outboundBuffer, results.ultrasoundSensor);
 
 		outboundBuffer.flip();
 		while (outboundBuffer.hasRemaining()) {
@@ -181,9 +181,9 @@ public class Session {
 		outboundBuffer.position(0);
 		outboundBuffer.putInt(rotate.ticksRotated);
 		ContinuousScanData results = rotate.scanData;
-		outboundBuffer.putInt(results.irSensor.length * 8);
+		outboundBuffer.putInt(results.ultrasoundSensor.length * 8);
 		write(outboundBuffer, results.steps);
-		write(outboundBuffer, results.irSensor);
+		write(outboundBuffer, results.ultrasoundSensor);
 		outboundBuffer.flip();
 		while (outboundBuffer.hasRemaining()) {
 			this.channel.write(outboundBuffer);
@@ -210,7 +210,7 @@ public class Session {
 		outboundBuffer.putInt(res.clicksAdvancedRight);
 		outboundBuffer.putInt(res.startProximity);
 		outboundBuffer.putInt(res.endProximity);
-		outboundBuffer.putInt(res.reflectedLightIntensity);
+		outboundBuffer.put((byte) (res.edgeSensor ? 1 : 0));
 		outboundBuffer.put((byte) (res.pressed ? 1 : 0));
 		outboundBuffer.flip();
 		while (outboundBuffer.hasRemaining()) {

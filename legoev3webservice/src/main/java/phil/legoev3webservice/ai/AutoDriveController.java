@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import phil.legoev3webservice.control.AdvanceResults;
 import phil.legoev3webservice.control.RobotController;
 import phil.legoev3webservice.control.RotateResult;
+import phil.legoev3webservice.control.StateUpdatingRobotController;
 import phil.legoev3webservice.map.EnvironmentMap;
 import phil.legoev3webservice.map.RobotState;
 import phil.legoev3webservice.robot.RobotCalibration;
@@ -62,29 +63,30 @@ public class AutoDriveController {
 			d = d + 360;
 		}
 		int requested = (int) Math.round(d * RobotCalibration.ROTATE_CLICKS_PER_DEGREE);
-		RotateResult rotateResults = robotController.rotate(requested);
-		int r = rotateResults.ticksRotated;
 		boolean rescanRequired = false;
-		if (requested - r >= 10) {
-			logger.info("Rotate didn't seem to work");
-			listener.stateChanged();
-			robotController.reverse(COLLISION_REVERSE_CLICKS);
-			listener.stateChanged();
-			rescanRequired = true;
+		if (Math.abs(requested) > 0) {
+			RotateResult rotateResults = robotController.rotate(requested);
+			int r = rotateResults.ticksRotated;
+			if (requested - r >= 10) {
+				logger.info("Rotate didn't seem to work");
+				listener.stateChanged();
+				robotController.reverse(COLLISION_REVERSE_CLICKS);
+				listener.stateChanged();
+				rescanRequired = true;
+			} else {
+				listener.stateChanged();
+
+				AdvanceResults res = robotController
+						.advanceWithoutCollision((int) Math.round(lc.distance * RobotCalibration.MOVE_CLICKS_PER_CM));
+				listener.stateChanged();
+				rescanRequired = handleCollision(listener, rescanRequired, res);
+			}
 		} else {
-			listener.stateChanged();
 
 			AdvanceResults res = robotController
 					.advanceWithoutCollision((int) Math.round(lc.distance * RobotCalibration.MOVE_CLICKS_PER_CM));
 			listener.stateChanged();
-			if (res.pressed) {
-				logger.info("Stopped. " + res);
-				robotController.reverse(Math.max(COLLISION_REVERSE_CLICKS, res.getDistance() / 2));
-				listener.stateChanged();
-				rescanRequired = true;
-			} else if (res.endProximity < 2 || res.reflectedLightIntensity > RobotCalibration.SENSOR_COLOR_STOP) {
-				rescanRequired = true;
-			}
+			rescanRequired = handleCollision(listener, rescanRequired, res);
 		}
 
 		if (rescanRequired || environmentMap.hasUnknownInfront(this.robotState.x_CM, robotState.y_CM,
@@ -93,6 +95,22 @@ public class AutoDriveController {
 		}
 
 		return path;
+	}
+
+	private boolean handleCollision(PathListener listener, boolean rescanRequired, AdvanceResults res) {
+		if (res.pressed) {
+			logger.info("Stopped. " + res);
+			robotController.reverse(Math.max(COLLISION_REVERSE_CLICKS, res.getDistance() / 2));
+			listener.stateChanged();
+			rescanRequired = true;
+		} else if (res.edgeSensor) {
+			logger.info("Edge sensor detected collision " + res);
+			robotController.reverse(Math.max(COLLISION_REVERSE_CLICKS, res.getDistance() / 2));
+			listener.stateChanged();
+		} else if (res.endProximity < RobotCalibration.ULTRASOUND_COLLISION_DISTANCE) {
+			rescanRequired = true;
+		}
+		return rescanRequired;
 	}
 
 }

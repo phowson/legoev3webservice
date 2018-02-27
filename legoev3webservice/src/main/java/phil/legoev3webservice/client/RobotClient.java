@@ -63,7 +63,7 @@ public class RobotClient implements RobotController, Closeable {
 			outBuffer.flip();
 			this.socket.write(outBuffer);
 			inBuffer.clear();
-			while (inBuffer.position() < 21) {
+			while (inBuffer.position() < 18) {
 				this.socket.read(inBuffer);
 			}
 			inBuffer.flip();
@@ -71,10 +71,10 @@ public class RobotClient implements RobotController, Closeable {
 			int clicksAdvancedR = inBuffer.getInt();
 			int startProximity = inBuffer.getInt();
 			int endProximity = inBuffer.getInt();
-			int reflectedLightIntensity = inBuffer.getInt();
+			boolean edgeSensor = inBuffer.get() ==1;
 			boolean pressed = inBuffer.get() == 1;
 			AdvanceResults res = new AdvanceResults(clicksAdvancedL, clicksAdvancedR, startProximity, endProximity,
-					reflectedLightIntensity, pressed);
+					edgeSensor, pressed);
 			return res;
 		} catch (IOException e) {
 			logger.error("IO Error", e);
